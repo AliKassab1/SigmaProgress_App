@@ -1,0 +1,1129 @@
+/* ==========================================================================
+   SIGMA PROGRESS — APP DESIGN SYSTEM / KOMPONENTEN
+   Die wiederverwendbaren Bausteine. Alles, was auf mehr als einem Screen
+   vorkommt, steht hier und nicht in screens.css.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   KARTEN
+   Karten sind dunkelgrau und einen Tick heller als der Grund. Sie tragen
+   keine harten Rahmen und keine Schlagschatten — Tiefe kommt aus einer
+   sehr weichen Bodenverdunkelung, einer Haarlinie und einem hellen
+   Lichtstreifen an der Oberkante.
+   -------------------------------------------------------------------------- */
+
+.card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035) 0%,
+      rgba(255, 255, 255, 0) 38%
+    ),
+    var(--bg-elev-1);
+  box-shadow: var(--shadow-md), var(--shadow-top);
+  padding: 1rem;
+}
+
+.card--tight {
+  padding: 0.875rem;
+  border-radius: var(--r-lg);
+}
+
+.card--sunken {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(255, 255, 255, 0) 40%
+    ),
+    var(--bg-sunken);
+}
+
+.card--raised {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0) 44%
+    ),
+    var(--bg-elev-2);
+}
+
+.card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Gruener Lichtstreifen an der Oberkante. Setzt einen Akzent, ohne die
+   Flaeche selbst aufzuhellen. */
+.card--glow::before {
+  content: "";
+  position: absolute;
+  inset-inline: 12%;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(34, 199, 126, 0.65),
+    transparent
+  );
+}
+
+/* Weicher gruener Lichtkegel in der Ecke — futuristisch, sehr zurueckhaltend. */
+.card--halo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    22rem 14rem at 88% -18%,
+    rgba(34, 199, 126, 0.16),
+    transparent 68%
+  );
+}
+
+.card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: 700;
+  letter-spacing: -0.014em;
+  line-height: 1.3;
+}
+
+.card__foot {
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+/* Karte, die auf Beruehrung reagiert (rein visuell). */
+.card--tap {
+  transition:
+    transform var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  display: block;
+}
+
+.card--tap:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-lg), var(--shadow-top);
+}
+
+.card--tap:active {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   ICON-KACHEL
+   -------------------------------------------------------------------------- */
+
+.icon-tile {
+  --tile-size: 2.25rem;
+  width: var(--tile-size);
+  height: var(--tile-size);
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: linear-gradient(
+    160deg,
+    rgba(34, 199, 126, 0.2),
+    rgba(34, 199, 126, 0.06)
+  );
+  box-shadow: inset 0 0 0 1px var(--line-green);
+  color: var(--green-300);
+}
+
+.icon-tile svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.icon-tile--sm {
+  --tile-size: 1.75rem;
+  border-radius: var(--r-xs);
+}
+
+.icon-tile--sm svg {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+.icon-tile--lg {
+  --tile-size: 2.75rem;
+  border-radius: var(--r-md);
+}
+
+.icon-tile--lg svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+.icon-tile--plain {
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-2);
+}
+
+/* --------------------------------------------------------------------------
+   SYMBOL-ICON
+   Ein einziger Strichstil fuer die ganze App: 1.75px, runde Enden, runde
+   Verbindungen. Keine ausgefuellten Icons, keine zwei Gewichte.
+   -------------------------------------------------------------------------- */
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+.icon--sm {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 1.9;
+}
+
+.icon--lg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon--xl {
+  width: 1.875rem;
+  height: 1.875rem;
+}
+
+/* --------------------------------------------------------------------------
+   SCHALTFLAECHEN
+   Primaer: gruen mit weisser Schrift, gruener Verlauf, weicher Glow.
+   Sekundaer: dunkelgrau mit Haarlinie, gruen erst beim Beruehren.
+   -------------------------------------------------------------------------- */
+
+.btn {
+  --btn-h: 3rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--btn-h);
+  padding-inline: 1.125rem;
+  border-radius: var(--r-pill);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--lg {
+  --btn-h: 3.375rem;
+  font-size: 1rem;
+  padding-inline: 1.375rem;
+}
+
+.btn--sm {
+  --btn-h: 2.375rem;
+  font-size: 0.8125rem;
+  padding-inline: 0.875rem;
+}
+
+/* --- Primaer ---------------------------------------------------------------
+   Wichtig: weisse Schrift auf gruener Fuellung setzt eine Obergrenze fuer
+   die Helligkeit des Greens. #0a8443 ist mit 4,78:1 die hellste Stufe, die
+   noch AA traegt. Deshalb wird der Verlauf nach unten (dunkler) gezogen und
+   die Leuchtkraft kommt aus dem Aussen-Schein und einem hellen Rand, nicht
+   aus einer helleren Fuellung unter der Schrift.
+   -------------------------------------------------------------------------- */
+.btn--primary {
+  color: var(--text-on-green);
+  background: linear-gradient(180deg, var(--green-600) 0%, var(--green-700) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 0 0 1px rgba(34, 199, 126, 0.32),
+    var(--shadow-green);
+}
+
+.btn--primary:hover {
+  background: linear-gradient(180deg, var(--green-700) 0%, var(--green-800) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0 1px rgba(34, 199, 126, 0.5),
+    0 18px 40px -12px rgba(34, 199, 126, 0.68);
+}
+
+.btn--primary:active {
+  background: linear-gradient(180deg, var(--green-700) 0%, var(--green-900) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(34, 199, 126, 0.4),
+    var(--shadow-green);
+}
+
+/* --- Sekundaer ------------------------------------------------------------ */
+.btn--secondary {
+  color: var(--text-1);
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.btn--secondary:hover {
+  color: var(--green-200);
+  background: var(--bg-elev-3);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+/* --- Ghost: nur Text mit gruenem Akzent ----------------------------------- */
+.btn--ghost {
+  color: var(--text-2);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+
+.btn--ghost:hover {
+  color: var(--green-200);
+  background: var(--green-tint-2);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+/* --- Icon-Knopf ------------------------------------------------------------ */
+.icon-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  color: var(--text-2);
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.icon-btn:hover {
+  color: var(--green-200);
+  background: var(--bg-elev-3);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+/* --------------------------------------------------------------------------
+   CHIPS UND PLATETTEN
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.75rem;
+  padding-inline: 0.625rem;
+  border-radius: var(--r-pill);
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip--green {
+  background: var(--green-tint);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+  color: var(--green-200);
+}
+
+.chip--warn {
+  background: var(--state-warn-tint);
+  box-shadow: inset 0 0 0 1px rgba(240, 180, 41, 0.28);
+  color: #f7cf7a;
+}
+
+.chip--calm {
+  background: var(--state-calm-tint);
+  box-shadow: inset 0 0 0 1px rgba(76, 157, 240, 0.28);
+  color: #a6cdfb;
+}
+
+.chip--mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+/* Zurueckhaltender als der Standard: nur die Umrandung, keine Fuellung. */
+.chip--muted {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-3);
+}
+
+/* Anklickbare Platte (Zeitraumwahl). Eigenes Ziel, sonst faellt sie beim
+   Tippen aus dem Takt der uebrigen Platten. */
+.chip--btn {
+  height: 2rem;
+  padding-inline: 0.8125rem;
+  cursor: pointer;
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.chip--btn:hover {
+  color: var(--green-200);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.chip__dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+/* Live-Punkt mit pulsierendem Ring. */
+.dot-live {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--green-300);
+  flex: none;
+}
+
+.dot-live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--green-300);
+  animation: pulse-ring 2.4s var(--ease-out) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   SEGMENTED CONTROL
+   -------------------------------------------------------------------------- */
+
+/* Vier Stufen brauchen auf 320px mehr Platz, als die Karte hergibt. Statt
+   die Stufen zu umbrechen — das sieht kaputt aus — scrollt die Leiste in
+   sich, ohne sichtbare Bildlaufleiste. */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmented::-webkit-scrollbar {
+  display: none;
+}
+
+.segmented__btn {
+  flex: none;
+}
+
+.segmented__btn {
+  min-height: 1.875rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--r-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-3);
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.segmented__btn:hover {
+  color: var(--text-1);
+}
+
+.segmented__btn[aria-pressed="true"] {
+  color: var(--bg-base);
+  background: var(--green-300);
+  box-shadow: 0 6px 16px -8px var(--green-glow);
+}
+
+/* --------------------------------------------------------------------------
+   STATISTIK-KACHEL
+   -------------------------------------------------------------------------- */
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0) 46%
+    ),
+    var(--bg-elev-1);
+  box-shadow: var(--shadow-md), var(--shadow-top);
+  transition:
+    transform var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease);
+}
+
+.stat:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+}
+
+.stat__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stat__label {
+  font-family: var(--font-mono);
+  /* Fluid, weil "Trainingszeit" in Grossbuchstaben die breiteste
+     Beschriftung ist und auf 320px nicht neben das Icon passt. */
+  font-size: clamp(0.5625rem, 0.48rem + 0.28vw, 0.625rem);
+  font-weight: 500;
+  letter-spacing: clamp(0.08em, 0.05em + 0.2vw, 0.14em);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.stat__value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 0.25rem;
+  /* Fluid: auf einem 320px-Geraet muss "1 840 kcal" noch in die Kachel. */
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1.05rem + 1.5vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.stat__unit {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+
+.stat__foot {
+  display: flex;
+  align-items: center;
+  gap: 0.3125rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--green-300);
+}
+
+.delta--flat {
+  color: var(--text-3);
+}
+
+.delta--warn {
+  color: var(--state-warn);
+}
+
+/* --------------------------------------------------------------------------
+   FORTSCHRITTSSPUR
+   -------------------------------------------------------------------------- */
+
+.track {
+  height: 0.375rem;
+  border-radius: var(--r-pill);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.track__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green-600), var(--green-400));
+  box-shadow: 0 0 12px -2px var(--green-glow);
+}
+
+.track__fill--muted {
+  background: linear-gradient(90deg, var(--green-900), var(--green-700));
+  box-shadow: none;
+}
+
+.track--thin {
+  height: 0.25rem;
+}
+
+/* Fortschrittsring (SVG) */
+.ring__track {
+  fill: none;
+  stroke: var(--bg-sunken);
+  stroke-width: 7;
+}
+
+.ring__value {
+  fill: none;
+  stroke: url(#ringGradient);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  filter: drop-shadow(0 0 6px rgba(34, 199, 126, 0.45));
+}
+
+.ring-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.ring-wrap__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  line-height: 1.05;
+}
+
+/* --------------------------------------------------------------------------
+   LISTENZEILE (Profil / Einstellungen)
+   -------------------------------------------------------------------------- */
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  min-height: 3.375rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: var(--text-1);
+  transition: background-color var(--dur-1) var(--ease);
+}
+
+.list__item + .list__item {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.list__item:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.list__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.list__sub {
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.list__chev {
+  color: var(--text-3);
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.list__item:hover .list__chev {
+  transform: translateX(2px);
+  color: var(--green-300);
+}
+
+/* Schalter */
+.switch {
+  position: relative;
+  width: 2.875rem;
+  height: 1.625rem;
+  flex: none;
+  border-radius: var(--r-pill);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: background-color var(--dur-2) var(--ease);
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: var(--text-3);
+  transition:
+    transform var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease);
+}
+
+.switch[aria-checked="true"] {
+  background: var(--green-600);
+  box-shadow: inset 0 0 0 1px var(--green-400);
+}
+
+.switch[aria-checked="true"]::after {
+  transform: translateX(1.25rem);
+  background: var(--white);
+}
+
+/* --------------------------------------------------------------------------
+   AVATAR
+   -------------------------------------------------------------------------- */
+
+/* Dunkle Schrift auf dem Avatar — deshalb ein heller Verlauf, kein Gruen
+   unter Text. */
+.avatar {
+  --size: 2.5rem;
+  width: var(--size);
+  height: var(--size);
+  flex: none;
+  border-radius: var(--r-pill);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--bg-base);
+  background: linear-gradient(150deg, var(--green-200) 0%, var(--green-500) 100%);
+  box-shadow: 0 6px 16px -8px var(--green-glow);
+  position: relative;
+}
+
+.avatar--cool {
+  background: linear-gradient(150deg, #cfeaff 0%, #4c9df0 100%);
+  box-shadow: 0 6px 16px -8px rgba(76, 157, 240, 0.5);
+}
+
+.avatar--sm {
+  --size: 2rem;
+  font-size: 0.75rem;
+}
+
+.avatar--lg {
+  --size: 3.5rem;
+  font-size: 1.125rem;
+}
+
+.avatar--xl {
+  --size: 4.5rem;
+  font-size: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   BOTTOM-NAVIGATION (DOCK)
+   Fuenf Punkte, nichts mehr. Der aktive Punkt ist gruen, traegt eine
+   eigene leuchtende Flaeche und einen grünen Schatten nach unten —
+   dreifach kodiert (Farbe, Flaeche, Position), damit er auch fuer
+   Farbenblinde eindeutig ist.
+   -------------------------------------------------------------------------- */
+
+.dock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  z-index: 60;
+  width: min(calc(100% - 1.5rem), 34rem);
+  padding: 7px;
+  border-radius: var(--r-2xl);
+  background: linear-gradient(180deg, var(--glass-1) 0%, var(--glass-2) 100%);
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-top),
+    0 24px 48px -18px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(34, 199, 126, 0.05),
+    0 14px 40px -26px var(--green-glow);
+}
+
+.dock__list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  /* Blink laesst <button> nicht auf die Breite des Containers dehnen,
+     auch nicht bei display:flex. Ohne diese Zeile sitzen die fuenf
+     Punkte links zusammen statt als Leiste. */
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.125rem 0.4375rem;
+  border-radius: var(--r-lg);
+  color: var(--text-3);
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.nav-item:hover {
+  color: var(--text-2);
+}
+
+.nav-item__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  transition: transform var(--dur-2) var(--ease);
+}
+
+.nav-item__label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nav-item[aria-current="page"] {
+  color: var(--green-300);
+  background: linear-gradient(
+    180deg,
+    rgba(34, 199, 126, 0.2) 0%,
+    rgba(34, 199, 126, 0.04) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(34, 199, 126, 0.24),
+    0 10px 24px -12px rgba(34, 199, 126, 0.75);
+}
+
+.nav-item[aria-current="page"] .nav-item__icon {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 0 9px rgba(34, 199, 126, 0.6));
+}
+
+.nav-item[aria-current="page"] .nav-item__label {
+  color: var(--green-200);
+}
+
+.nav-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--green-300);
+  box-shadow: 0 0 10px 1px var(--green-glow);
+}
+
+/* Ungelesen-Marke */
+.nav-item__badge {
+  position: absolute;
+  top: -3px;
+  right: calc(50% - 20px);
+  min-width: 1.0625rem;
+  height: 1.0625rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--r-pill);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, var(--green-600), var(--green-700));
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--bg-elev-1);
+}
+
+.nav-item[aria-current="page"] .nav-item__badge {
+  box-shadow: 0 0 0 2px #16231c;
+}
+
+/* ==========================================================================
+   DIAGRAMME
+   Reine SVG. Keine Bibliothek, keine Berechnung — die Koordinaten sind
+   fest gesetzt, damit die Optik im Review fixiert ist.
+   ========================================================================== */
+
+.chart {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart__grid {
+  stroke: rgba(255, 255, 255, 0.055);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+.chart__axis-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  fill: var(--text-3);
+  text-transform: uppercase;
+}
+
+.chart__value-label {
+  font-family: var(--font-display), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  fill: var(--text-1);
+}
+
+.chart__line {
+  fill: none;
+  stroke: var(--green-300);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 8px rgba(34, 199, 126, 0.5));
+}
+
+.chart__dot {
+  fill: var(--bg-elev-1);
+  stroke: var(--green-300);
+  stroke-width: 2;
+}
+
+.chart__dot--today {
+  fill: var(--green-300);
+  stroke: rgba(10, 12, 11, 0.9);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px rgba(34, 199, 126, 0.8));
+}
+
+.chart__bar-track {
+  fill: rgba(255, 255, 255, 0.045);
+}
+
+.chart__bar {
+  fill: url(#barGradient);
+}
+
+.chart__bar--done {
+  filter: drop-shadow(0 0 6px rgba(34, 199, 126, 0.4));
+}
+
+.chart__bar--rest {
+  fill: rgba(255, 255, 255, 0.045);
+}
+
+.chart__goal {
+  stroke: rgba(34, 199, 126, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.chart__focus-ring {
+  fill: none;
+  stroke: var(--green-300);
+  stroke-width: 1.5;
+  opacity: 0.45;
+  transform-origin: center;
+  animation: breathe 3.2s var(--ease) infinite;
+}
+
+/* Beschriftungs-Box auf dem Diagramm */
+.chart__callout-bg {
+  fill: var(--bg-elev-3);
+  stroke: var(--line-strong);
+}
+
+.chart__callout-text {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--text-1);
+}
+
+/* Senkrechte Linie unter dem ausgewaehlten Punkt. Zieht hinter dem Punkt,
+   damit der Punkt darauf liegen bleibt und nicht halb verdeckt wird. */
+.chart__cursor {
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+/* Minikurve fuer Listen. Kein Text, keine Achse — nur die Form. */
+.sparkline {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+}
+
+/* ==========================================================================
+   HINWEISCHLEIFE
+   Zeigt in der Kopfzeile, dass es sich um einen Entwurf handelt.
+   ========================================================================== */
+
+.prototype-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem var(--gutter);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.018);
+  border-bottom: 1px solid var(--line);
+}
+
+.prototype-note strong {
+  color: var(--green-300);
+  font-weight: 600;
+}
+
+.skeleton {
+  border-radius: var(--r-sm);
+  background: linear-gradient(
+    90deg,
+    var(--bg-elev-2) 25%,
+    var(--bg-elev-3) 37%,
+    var(--bg-elev-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   SEHR SCHMALE GERAETE (bis ca. 380px)
+   Hier wird nicht gestuft, sondern verkleinert: kleinere Zwischenraeume,
+   kleinere Icons, gleiche Hierarchie. Ab 384px greifen wieder die
+   normalen Werte.
+   ========================================================================== */
+
+@media (max-width: 24rem) {
+  .stat {
+    padding: 0.75rem;
+  }
+
+  .stat__top {
+    gap: 0.25rem;
+  }
+
+  .stat__label {
+    letter-spacing: 0.05em;
+  }
+
+  .stat__top .icon-tile {
+    --tile-size: 1.375rem;
+  }
+
+  .stat__top .icon-tile svg {
+    width: 0.8125rem;
+    height: 0.8125rem;
+  }
+
+  .stat__foot {
+    font-size: 0.625rem;
+  }
+
+  .workout,
+  .current-exercise,
+  .profile-head {
+    padding-inline: 0.875rem;
+  }
+
+  .workout__meta {
+    gap: 0.375rem;
+  }
+
+  .meta-cell {
+    padding: 0.5rem;
+  }
+
+  .meta-cell__value {
+    font-size: 0.875rem;
+  }
+
+  .quick__item {
+    font-size: 0.625rem;
+  }
+
+  .quick__icon {
+    width: 2rem;
+    height: 2rem;
+  }
+}

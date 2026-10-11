@@ -1,0 +1,72 @@
+{
+  "name": "Sigma Progress — Training, Ernährung, Fortschritt",
+  "short_name": "Sigma Progress",
+  "description": "Dein Trainingsplan, dein Gewichtsverlauf, deine Ernährung und ein Coach im Chat. Läuft offline, speichert lokal auf deinem Gerät.",
+  "id": "/sigma-progress",
+  "start_url": "./index.html#/dashboard",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#0a0c0b",
+  "theme_color": "#0a0c0b",
+  "lang": "de-CH",
+  "dir": "ltr",
+  "categories": ["fitness", "health", "lifestyle", "sports"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Training starten",
+      "short_name": "Training",
+      "description": "Direkt in den laufenden Trainingsablauf",
+      "url": "./index.html#/dashboard",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Gewicht eintragen",
+      "short_name": "Gewicht",
+      "description": "Aktuelles Gewicht in 30 Sekunden erfassen",
+      "url": "./index.html#/tracken/gewicht",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Coach fragen",
+      "short_name": "Coach",
+      "description": "Direkt in den Chat",
+      "url": "./index.html#/chat",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

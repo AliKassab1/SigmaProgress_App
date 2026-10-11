@@ -1,0 +1,11 @@
+# Abhängigkeiten (nur falls Skripte lokal installiert werden)
+node_modules/
+
+# Umgebungsvariablen
+.env*
+!.env.example
+
+# Betriebssystem / Editor
+.DS_Store
+Thumbs.db
+desktop.ini

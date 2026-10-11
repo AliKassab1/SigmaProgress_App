@@ -1,0 +1,2181 @@
+/* ==========================================================================
+   SIGMA PROGRESS — BILDSCHIRME DER APP
+   --------------------------------------------------------------------------
+   Was in components.css nicht steht, weil es nur auf einem Bildschirm
+   vorkommt. Aufbau:
+
+     1. Startzustand und Geraetestatus
+     2. Bausteine, die mehrere Bereiche teilen (Aufgaben, Check-in, Zahl)
+     3. Anmeldung und Onboarding
+     4. Dashboard-Ergaenzungen
+     5. Tracken
+     6. Trainingsablauf
+     7. Chat
+     8. Fortschritt
+     9. Profil
+
+   Reihenfolge folgt dem Weg durch die App, nicht der Alphabet.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. STARTZUSTAND UND GERAESTESTATUS
+   ========================================================================== */
+
+/* Kurz sichtbar, bevor main.js das Geruest baut. Kein Kreisel: der sieht
+   aus wie eine Endlosschleife, wenn das Skript ausbleibt. */
+.boot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 100dvh;
+}
+
+.brand__mark--xl {
+  --mark: 64px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+
+.brand__mark--xl svg {
+  width: 40px;
+  height: 40px;
+}
+
+.boot__name {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-2);
+}
+
+/* Sobald das Geruest steht, blendet alles weich ein. Verhindert den
+   Eindruck eines Sprungs zwischen erster Farbe und App. */
+body.is-ready .topbar,
+body.is-ready .app {
+  animation: rise var(--dur-3) var(--ease) both;
+}
+
+/* Ohne JavaScript: ehrlich sagen, was fehlt, statt einer leeren Seite. */
+.noscript {
+  max-width: 32rem;
+  margin: 4rem auto;
+  padding: 1.5rem;
+  border-radius: var(--r-xl);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+}
+
+.noscript h1 {
+  font-size: var(--text-h2);
+  color: var(--text-1);
+  margin-bottom: 0.75rem;
+}
+
+/* Ohne Verbindung bleibt alles bedienbar — das muss man nur sehen. */
+body.is-offline .topbar::after {
+  content: "Offline — deine Daten sind gespeichert";
+  display: block;
+  padding: 0.375rem var(--gutter) 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--state-warn);
+  background: var(--state-warn-tint);
+  border-bottom: 1px solid rgba(240, 180, 41, 0.24);
+}
+
+/* Der Wirt des Docks ist nur ein Ankerpunkt — das Dock selbst ist fixiert. */
+.dock-host[hidden] {
+  display: none;
+}
+
+/* ==========================================================================
+   2. GEMEINSAME BAUSTEINE
+   ========================================================================== */
+
+/* --- Leerzustand ---------------------------------------------------------
+   Kein „Nichts gefunden“-Symbol, sondern eine Einladung mit naechstem
+   Schritt. Ein leerer Bereich ist eine Frage, keine Fehlermeldung.
+   ------------------------------------------------------------------------ */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1.75rem 1rem;
+  text-align: center;
+}
+
+.empty__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.empty__hint {
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  max-width: 24rem;
+}
+
+/* --- Aufgabenliste --------------------------------------------------------
+   „Was muss ich heute tun?“ Das haeufigste Element der App — deshalb
+   bewusst ruhig: keine Punkte, keine Level, nur erledigt oder offen.
+   ------------------------------------------------------------------------ */
+
+.tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background-color var(--dur-2) var(--ease);
+}
+
+.task--done {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.task--done .task__mark {
+  color: var(--green-300);
+  background: var(--green-tint);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.task--done .task__label {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: rgba(124, 137, 129, 0.5);
+}
+
+.task__mark {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-3);
+}
+
+.task__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.task__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.task__hint {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.task__progress {
+  flex: none;
+  width: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-3);
+  text-align: right;
+}
+
+.tasks--compact .task {
+  padding: 0.625rem 0.75rem;
+  background: transparent;
+}
+
+/* --- Check-in -------------------------------------------------------------
+   Ein Datum, ein Status, ein Knopf. Mehr braucht es nicht, damit klar ist,
+   dass etwas ansteht.
+   ------------------------------------------------------------------------ */
+
+.checkin-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  background: var(--green-tint-2);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.checkin-mini__date {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--green-200);
+}
+
+.checkin-card {
+  padding: 0.875rem;
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34, 199, 126, 0.11) 0%,
+      rgba(34, 199, 126, 0.01) 62%
+    ),
+    var(--bg-elev-1);
+  border: 1px solid var(--line-green);
+  box-shadow: var(--shadow-md);
+}
+
+.checkin-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
+}
+
+.checkin-card__date {
+  margin-top: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+  color: var(--text-1);
+}
+
+.checkin-done {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--green-300);
+}
+
+/* --- Coach-Hinweis (ungelesene Nachrichten) ------------------------------
+   Nur eine Zeile. Wer sie nicht wegklickt, liest den Chat ohnehin.
+   ------------------------------------------------------------------------ */
+
+.coach-unread {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5625rem 0.875rem;
+  border-radius: var(--r-pill);
+  background: var(--green-tint);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+  color: var(--green-200);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color var(--dur-2) var(--ease);
+}
+
+.coach-unread:hover {
+  background: rgba(34, 199, 126, 0.18);
+}
+
+.coach-unread .icon {
+  margin-left: auto;
+}
+
+/* --- Die grosse Zahl -----------------------------------------------------
+   Wo ein Bereich mit einer einzigen Kennzahl beginnt. Bewusst keine
+   Animation, kein Zaehlen — die Zahl steht da und ist fertig.
+   ------------------------------------------------------------------------ */
+
+.headline {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.headline__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.headline__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 1.9rem + 2.4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.headline__unit {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+
+.headline__side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.badge-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3125rem 0.625rem;
+  border-radius: var(--r-pill);
+  background: var(--green-tint);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+  color: var(--green-200);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-change--flat {
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-3);
+}
+
+/* Gewichtsanstieg wird nicht als Erfolg gruen gefaerbt. */
+.badge-change--up {
+  background: var(--state-warn-tint);
+  box-shadow: inset 0 0 0 1px rgba(240, 180, 41, 0.28);
+  color: #f7cf7a;
+}
+
+/* --- Fortschrittsbalken zum Ziel ----------------------------------------- */
+
+.goalbar {
+  margin-top: 1.25rem;
+}
+
+.goalbar__labels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+.goalbar__labels span:nth-child(2) {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.goalbar__done {
+  color: var(--green-300) !important;
+}
+
+/* --- Reihenliste mit Wert (Einordnung) ----------------------------------- */
+
+.facts {
+  display: flex;
+  flex-direction: column;
+}
+
+.fact {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0;
+}
+
+.fact + .fact {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.fact__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+
+.fact__value {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-1);
+}
+
+/* --- Bestleistungen ------------------------------------------------------ */
+
+.records {
+  display: flex;
+  flex-direction: column;
+}
+
+.record {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.record + .record {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.record__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.record__meta {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.record__value {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.record__value span {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+/* --- Meilensteine --------------------------------------------------------
+   Eine Liste und ein Satz fuer den naechsten. Kein Fortschrittsbalken
+   pro Stufe: das waere Spielstand, nicht Information.
+   ------------------------------------------------------------------------ */
+
+.milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.milestone__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.milestone__date {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.milestone__next {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  margin-top: 1rem;
+  padding-top: 0.875rem;
+  box-shadow: inset 0 1px 0 var(--line);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--green-200);
+}
+
+/* --- Verteilung der Muskelgruppen --------------------------------------- */
+
+.distribution {
+  display: flex;
+  flex-direction: column;
+}
+
+.distribution__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.distribution__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.375rem 0.75rem;
+  align-items: center;
+}
+
+.distribution__name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.distribution__value {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--green-200);
+}
+
+.distribution__row .track {
+  grid-column: 1 / -1;
+}
+
+/* --- Zwei Spalten (Desktop) ---------------------------------------------- */
+
+.layout-split {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ==========================================================================
+   3. ANMELDUNG UND ONBOARDING
+   Zwei Bildschirme ohne Dock und ohne Kopfzeile, und beide kommen vor allem
+   anderen: erst die Tür, dann die vier Schritte danach.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   ANMELDUNG
+   --------------------------------------------------------------------------
+   Das Formular steht so weit oben, wie es geht, und wird nach unten hin
+   bequem: Der Knopf sitzt nicht unter der Falz, sondern dort, wo der Daumen
+   ihn ohne Umgreifen findet.
+   -------------------------------------------------------------------------- */
+
+.auth {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: calc(1.5rem + env(safe-area-inset-top)) var(--gutter)
+    calc(1.5rem + env(safe-area-inset-bottom));
+  max-width: var(--shell-max);
+  margin-inline: auto;
+}
+
+.auth__top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.auth__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.auth__brand-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.auth__panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.auth__title {
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+}
+
+.auth__sub {
+  max-width: 30rem;
+}
+
+.auth__notice {
+  margin-top: 1rem;
+}
+
+.auth__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.auth__actions {
+  margin-top: 1.5rem;
+}
+
+/* „Angemeldet bleiben" — eine Zeile mit Schalter, wie in den Einstellungen. */
+.auth__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.125rem;
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.auth__row-text {
+  min-width: 0;
+}
+
+.auth__row-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.auth__row-sub {
+  margin-top: 0.1875rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+
+.auth__link-row {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.auth__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--green-300);
+  cursor: pointer;
+}
+
+.auth__link:hover {
+  text-decoration: underline;
+}
+
+.auth__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.auth__note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.4375rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+.auth__note .icon {
+  margin-top: 1px;
+  color: var(--green-300);
+}
+
+/* Die beiden Pflicht-Häkchen. Etwas Luft zum Feld darüber, damit sie nicht
+   wie ein Anhängsel des Passwortfelds wirken. */
+.consent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.375rem;
+}
+
+/* --------------------------------------------------------------------------
+   RECHTSTEXTE IM DIALOG
+   --------------------------------------------------------------------------
+   AGB und Datenschutz sind das eine, was man wirklich lesen muss — deshalb
+   bekommen sie Absätze mit Abstand und keine Textwand.
+   -------------------------------------------------------------------------- */
+
+.legal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.legal__block h3 {
+  margin: 0 0 0.25rem;
+  font-size: var(--text-h3);
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.legal p {
+  margin: 0;
+  font-size: var(--text-small);
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.legal__foot {
+  color: var(--text-3) !important;
+  font-style: italic;
+}
+
+/* Auf dem Desktop steht das Formular als schmale Spalte in der Mitte. Ein
+   Anmeldefeld über 1000 Pixel Breite wäre nichts als eine Zeile Text. */
+@media (min-width: 40rem) {
+  .auth {
+    max-width: 26rem;
+    justify-content: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ONBOARDING
+   Ein Bildschirm ohne Dock. Vier Schritte, ein Schritt pro Bildschirm-
+   hoehe — nie eine lange Liste zum Durchscrollen.
+   -------------------------------------------------------------------------- */
+
+.onboarding {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(1.25rem + env(safe-area-inset-top)) var(--gutter)
+    calc(1.25rem + env(safe-area-inset-bottom));
+  max-width: var(--shell-max);
+  margin-inline: auto;
+}
+
+.onboarding__top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.onboarding__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+}
+
+/* Ein Schritt: Ueberschrift, Erklaerung, Felder. Der Fortschritt steht
+   oben in onboarding__top — hier waere eine zweite Anzeige ueberfluessig. */
+.onboarding__step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.onboarding__title {
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+}
+
+.onboarding__sub {
+  max-width: 32rem;
+}
+
+.onboarding__q {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-top: 0.75rem;
+}
+
+.onboarding__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.onboarding__hint {
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+
+.onboarding__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  background: var(--bg-elev-1);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+.onboarding__note .icon {
+  margin-top: 1px;
+  color: var(--green-300);
+}
+
+/* Zusammenfassung im letzten Schritt */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border-radius: var(--r-lg);
+  background: var(--bg-elev-1);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.summary__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.summary__row + .summary__row {
+  box-shadow: inset 0 1px 0 var(--line);
+  padding-top: 0.625rem;
+}
+
+.summary__label {
+  color: var(--text-3);
+}
+
+.summary__value {
+  font-weight: 600;
+  color: var(--text-1);
+  text-align: right;
+}
+
+.onboarding__foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: 1.5rem;
+}
+
+/* ==========================================================================
+   4. DASHBOARD-ERGAENZUNGEN
+   ========================================================================== */
+
+.greet__right {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.workout__intro {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.workout__tag--done {
+  color: var(--green-200);
+}
+
+.workout__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Ring-Beschriftung im Wochenziel */
+.ring__text,
+.ring__value-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text-1);
+}
+
+.ring__value-text {
+  font-size: 1.25rem;
+}
+
+.ring__text {
+  font-size: 1rem;
+}
+
+.ring__caption {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.quote__meta {
+  display: block;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ==========================================================================
+   5. TRACKEN
+   Vier Unterbereiche. Die Tabelle steht oben und bleibt sichtbar — wer
+   einen Wert aendert, will die Folge sehen.
+   ========================================================================== */
+
+.tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Segmentschalter ueber die volle Breite: vier Reiter passen nur, wenn sie
+   nicht ihre eigene Breite beanspruchen. */
+.tabpanel ~ * .segmented,
+.screen__inner > .segmented {
+  width: 100%;
+}
+
+.screen__inner > .segmented__btn {
+  flex: 1;
+}
+
+.weigh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+/* Eintrag in einer Liste (Gewicht, Mahlzeit) */
+.wlog {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.wlog + .wlog {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.wlog__value {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  font-variant-numeric: tabular-nums;
+}
+
+.wlog__value span {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.icon-btn--ghost {
+  width: 2.25rem;
+  height: 2.25rem;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+  color: var(--text-3);
+}
+
+.icon-btn--ghost:hover {
+  color: #f7a48b;
+  background: rgba(232, 106, 76, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(232, 106, 76, 0.28);
+}
+
+/* Makroverteilung */
+.macro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.macro__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.macro__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.macro__name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.macro__value {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* Schnellwahl fuer Mahlzeiten */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.75rem 0.8125rem;
+  border-radius: var(--r-md);
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  text-align: left;
+  transition:
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+
+.preset:hover {
+  background: var(--bg-elev-3);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+  transform: translateY(-1px);
+}
+
+.preset__meal {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.preset__kcal {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--green-200);
+}
+
+.preset__protein {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+/* Satzprotokoll im Protokoll-Bereich */
+.setrow {
+  padding: 0.75rem 0;
+}
+
+.setrow + .setrow {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.setrow__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.setrow__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.setrow__meta {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.setrow__sets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4375rem;
+  margin-top: 0.625rem;
+}
+
+.setcell {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.5rem;
+  border-radius: var(--r-sm);
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.setcell--done {
+  background: var(--green-tint-2);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.setcell__check {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-3);
+  background: var(--bg-sunken);
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease);
+}
+
+.setcell__check:hover {
+  color: var(--text-1);
+}
+
+.setcell--done .setcell__check {
+  color: var(--bg-base);
+  background: var(--green-300);
+}
+
+.setcell__index {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-3);
+}
+
+.setcell__input {
+  width: 2.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-1);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.setcell__input:focus {
+  outline: none;
+}
+
+.setcell__input::-webkit-outer-spin-button,
+.setcell__input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.setcell__group {
+  display: flex;
+  align-items: center;
+  gap: 0.1875rem;
+  padding-left: 0.375rem;
+  box-shadow: inset 1px 0 0 var(--line);
+}
+
+.setcell__input--kg {
+  width: 3rem;
+}
+
+.setcell__unit {
+  font-size: 0.625rem;
+  color: var(--text-3);
+}
+
+/* Fortschrittsfotos */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.photo {
+  position: relative;
+  margin: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.photo img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+
+.photo--newest {
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.photo figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+.photo__date {
+  font-weight: 600;
+}
+
+.photo__kg {
+  font-family: var(--font-mono);
+  color: var(--green-200);
+}
+
+/* Die Plaketten liegen auf dem Foto, nicht auf der Karte — deshalb eine
+   eigene, undurchsichtige Farbe statt des Kartengraus. */
+.photo__badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.125rem 0.4375rem;
+  border-radius: var(--r-pill);
+  background: rgba(10, 12, 11, 0.78);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+}
+
+.photo__delete {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-2);
+  background: rgba(10, 12, 11, 0.78);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+}
+
+.photo:hover .photo__delete,
+.photo:focus-within .photo__delete {
+  opacity: 1;
+}
+
+.photo__delete:hover {
+  color: #f7a48b;
+}
+
+/* Ohne Maus (Telefon) bleibt der Knopf sichtbar — sonst waere kein Weg,
+   ein Foto zu loeschen. */
+@media (hover: none) {
+  .photo__delete {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   6. CHAT
+   ========================================================================== */
+
+.chat-screen .screen__inner--chat {
+  gap: 0.875rem;
+  /* Genug Luft ueber dem Dock, damit der Verlauf nicht dahinter verschwindet. */
+  padding-bottom: 1rem;
+}
+
+.chat__head .row {
+  width: 100%;
+}
+
+.chat__head .dot-live {
+  margin-right: 0.4375rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.chat__topics {
+  display: flex;
+  gap: 0.4375rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+  /* Die Themenleiste ist bewusst scrollbar: sechs Themen passen nicht neben
+     den Rand, und ein zweiter Umschalter waere ein weiterer Bildschirm. */
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+
+.chat__topics::-webkit-scrollbar {
+  display: none;
+}
+
+.topic {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2.25rem;
+  padding-inline: 0.75rem;
+  border-radius: var(--r-pill);
+  background: var(--bg-elev-1);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.topic:hover {
+  color: var(--green-200);
+  background: var(--green-tint-2);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.topic__icon {
+  display: grid;
+  place-items: center;
+  color: var(--green-300);
+}
+
+.topic__icon .icon {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+.chat__thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-block: 0.5rem;
+}
+
+.chat__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+/* Tagesueberschrift zwischen den Blaetzen */
+.chat__thread .chat__day {
+  margin-block: 0.375rem;
+}
+
+.msg {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  max-width: 100%;
+  animation: rise var(--dur-3) var(--ease) both;
+}
+
+.msg--me {
+  flex-direction: row-reverse;
+}
+
+.msg__avatar {
+  margin-bottom: 0.125rem;
+}
+
+.msg__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: min(84%, 26rem);
+}
+
+.msg--me .msg__body {
+  align-items: flex-end;
+}
+
+.msg__bubble {
+  padding: 0.75rem 0.9375rem;
+  border-radius: var(--r-lg);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-md);
+}
+
+.msg--coach .msg__bubble {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: var(--r-xs);
+  color: var(--text-1);
+}
+
+.msg--me .msg__bubble {
+  background: linear-gradient(180deg, var(--green-600) 0%, var(--green-700) 100%);
+  border-bottom-right-radius: var(--r-xs);
+  color: var(--text-on-green);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    var(--shadow-green);
+}
+
+.msg__line + .msg__line {
+  margin-top: 0.5rem;
+}
+
+/* Fett im Text: der Coach betont einzelne Zahlen und Namen. */
+.msg__line strong {
+  font-weight: 700;
+  color: var(--green-200);
+}
+
+.msg--me .msg__line strong {
+  color: var(--white);
+}
+
+.msg__time {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.chat__composer {
+  position: sticky;
+  bottom: calc(var(--dock-height) + env(safe-area-inset-bottom) + 0.75rem);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.4375rem;
+  border-radius: var(--r-2xl);
+  background: linear-gradient(180deg, var(--glass-1), var(--glass-2));
+  border: 1px solid var(--line-strong);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-top),
+    0 20px 44px -20px rgba(0, 0, 0, 0.95);
+  transition:
+    border-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease);
+}
+
+.chat__composer:focus-within {
+  border-color: var(--line-green);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 3px rgba(34, 199, 126, 0.16),
+    0 20px 44px -20px rgba(0, 0, 0, 0.95);
+}
+
+/* Die Schnellantworten duerfen ueber den Rand hinauslaufen, sonst muesste
+   der Composer breiter werden als der Bildschirm. */
+.chat__composer .quick-replies {
+  margin-inline: -0.1875rem;
+  padding-inline: 0.1875rem;
+}
+
+.chat__form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat__form .input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.625rem;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.9375rem;
+}
+
+.chat__form .input:focus {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.send {
+  width: 2.625rem;
+  height: 2.625rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-on-green);
+  background: linear-gradient(180deg, var(--green-600), var(--green-700));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    var(--shadow-green);
+  transition:
+    transform var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease),
+    opacity var(--dur-2) var(--ease);
+}
+
+.send:hover:not(:disabled) {
+  transform: scale(1.05);
+  background: linear-gradient(180deg, var(--green-700), var(--green-800));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0 1px rgba(34, 199, 126, 0.5),
+    0 18px 40px -12px rgba(34, 199, 126, 0.68);
+}
+
+.send:disabled {
+  cursor: default;
+  color: var(--text-3);
+  background: var(--bg-elev-3);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* ==========================================================================
+   8. PROFIL
+   ========================================================================== */
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.identity__name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.026em;
+  line-height: 1.15;
+  color: var(--text-1);
+}
+
+.identity .btn {
+  flex: none;
+}
+
+.privacy-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.privacy-item + .privacy-item {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.privacy-item__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+/* ==========================================================================
+   9. KÖRPER-GRAFIK
+   Schematisch, nicht fotografisch. Zeigt Muskelgruppen ohne Bildmaterial.
+   ========================================================================== */
+
+.body-figure {
+  color: var(--text-3);
+  overflow: visible;
+}
+
+.bf-part {
+  stroke: currentColor;
+  opacity: 0.42;
+  transition:
+    opacity var(--dur-2) var(--ease),
+    stroke var(--dur-2) var(--ease);
+}
+
+.bf-part--on {
+  stroke: var(--green-300);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(34, 199, 126, 0.55));
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (min-width: 46rem) {
+  .photo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .summary-stats {
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 68rem) {
+  .layout-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ==========================================================================
+   SEHR SCHMALE GERAETE
+   ========================================================================== */
+
+@media (max-width: 24rem) {
+  .photo-grid {
+    gap: 0.5rem;
+  }
+
+  .msg__body {
+    max-width: 88%;
+  }
+}
+
+/* ==========================================================================
+   10. FREISCHALTUNG
+   --------------------------------------------------------------------------
+   Die Warteseite eines Kunden. Eine schmale Spalte, oben das Zeichen, dann
+   die Antwort auf die eine Frage: warum komme ich noch nicht rein.
+   ========================================================================== */
+
+.gate {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: calc(2rem + env(safe-area-inset-top)) var(--gutter)
+    calc(2rem + env(safe-area-inset-bottom));
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.gate__top {
+  display: flex;
+  justify-content: center;
+}
+
+.gate__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.gate__panel > .card {
+  width: 100%;
+  text-align: left;
+}
+
+.gate__icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green-tint);
+  border: 1px solid var(--line-green);
+  color: var(--green-300);
+}
+
+.gate__icon--warn {
+  background: var(--state-warn-tint);
+  border-color: rgba(240, 180, 41, 0.3);
+  color: var(--state-warn);
+}
+
+.gate__icon .icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.gate__title {
+  max-width: 22rem;
+}
+
+.gate__lead {
+  max-width: 26rem;
+  color: var(--text-2);
+}
+
+.gate__steps {
+  width: 100%;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.gate__step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.gate__step-num {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--line);
+  color: var(--green-300);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.gate__step-title {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.gate__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gate__meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--text-small);
+}
+
+.gate__meta-label {
+  color: var(--text-3);
+}
+
+.gate__meta-value {
+  color: var(--text-1);
+  text-align: right;
+}
+
+.gate__actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   11. VERWALTUNG
+   --------------------------------------------------------------------------
+   Ein eigener Bereich: eigene Kopfzeile mit Abmelden, Reiter statt unterer
+   Leiste, und eine Breite, die auf dem Laptop die Tabelle traegt, die auf
+   dem Telefon aber eine Spalte bleibt.
+   ========================================================================== */
+
+.admin {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+}
+
+.admin__bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: calc(0.75rem + env(safe-area-inset-top)) var(--gutter) 0.75rem;
+  background: var(--glass-2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+.admin__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.admin__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-1);
+}
+
+.admin__sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+  color: var(--green-300);
+}
+
+.admin__who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.admin__name {
+  font-size: var(--text-small);
+  color: var(--text-2);
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin__tabs {
+  width: 100%;
+  max-width: var(--shell-max-wide);
+  margin-inline: auto;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0.75rem var(--gutter) 0.25rem;
+}
+
+.admin__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.admin__tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  color: var(--text-2);
+  font-size: var(--text-small);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease);
+}
+
+.admin__tab .icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.admin__tab:hover {
+  background: var(--bg-elev-2);
+  color: var(--text-1);
+}
+
+.admin__tab.is-active {
+  background: var(--green-tint);
+  border-color: var(--line-green);
+  color: var(--green-300);
+}
+
+.admin__body {
+  width: 100%;
+  max-width: var(--shell-max-wide);
+  margin-inline: auto;
+  padding: 1rem var(--gutter) 0;
+}
+
+.admin__filters {
+  display: flex;
+  max-width: 100%;
+}
+
+.admin__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Personen- und Vorgangszeile ----------------------------------------- */
+
+.arow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem 0.875rem;
+  align-items: start;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.arow:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.arow__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.arow__title {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.arow__sub {
+  font-size: var(--text-small);
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}
+
+.arow__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.arow__note {
+  margin-top: 0.35rem;
+  font-size: var(--text-small);
+  color: var(--text-2);
+}
+
+.arow__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+@media (min-width: 44rem) {
+  .arow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .arow__actions {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+}
+
+/* ==========================================================================
+   12. ABO
+   ========================================================================== */
+
+.abo-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.abo-hero__price {
+  margin-top: 0.25rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.6rem + 2vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text-1);
+}
+
+.abo-hero__unit {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+
+.abo-hero .lead {
+  margin-top: 0.5rem;
+  max-width: 34rem;
+}
+
+.abo-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.abo-line__price {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--green-300);
+}
+
+.abo-line__unit {
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+/* ==========================================================================
+   ERNÄHRUNG — Tagesbilanz, Wasser, Mahlzeiten (Yazio-Stil)
+   ========================================================================== */
+
+.energy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.energy__value {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 2.2rem + 3vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.energy__value--over {
+  color: #f7a48b;
+}
+
+.energy__unit {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+
+.energy__label {
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+
+/* Wasser-Tracker */
+.water {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.375rem;
+  margin-top: 0.875rem;
+}
+
+.water .icon-btn {
+  width: 2rem;
+  height: 2rem;
+}
+
+.water__glasses {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.125rem, 1.2vw, 0.3125rem);
+}
+
+.water__glass {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 1.75rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem 0.5rem 0.625rem 0.625rem;
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-3);
+  transition:
+    background-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+
+.water__glass svg {
+  width: 0.8125rem;
+  height: 0.8125rem;
+}
+
+.water__glass:hover {
+  transform: translateY(-1px);
+}
+
+.water__glass--full {
+  color: var(--bg-base);
+  background: linear-gradient(180deg, var(--green-400), var(--green-600));
+  box-shadow:
+    inset 0 0 0 1px var(--line-green),
+    var(--shadow-green);
+}
+

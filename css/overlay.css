@@ -1,0 +1,431 @@
+/* ==========================================================================
+   SIGMA PROGRESS — UEBERLAGERUNGEN
+   --------------------------------------------------------------------------
+   Dialog (auf dem Telefon ein Sheet von unten) und Toast.
+
+   Beide haengen an einem Knoten ausserhalb der Screens — sonst wuerde ein
+   Dialog beim Screenwechsel verschwinden, und das Markup der Screen-Dateien
+   muesste den Dialog mitdenken.
+
+   Grundsatz: Der Hintergrund wird dunkler, nie das Panel heller. Ein
+   weisses Fenster in einer dunklen App sieht aus wie ein Fehler.
+   ========================================================================== */
+
+/* Der Wirt selbst ist unsichtbar und nur Ankerpunkt fuer die Kinder. */
+.overlay-host {
+  position: relative;
+  z-index: 80;
+}
+
+/* --------------------------------------------------------------------------
+   HINTERGRUND
+   -------------------------------------------------------------------------- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity var(--dur-3) var(--ease);
+}
+
+.backdrop.is-open {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   SHEET
+   -------------------------------------------------------------------------- */
+
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 92dvh;
+  padding: 0 1rem calc(1rem + env(safe-area-inset-bottom));
+  border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.045) 0%,
+      rgba(255, 255, 255, 0) 30%
+    ),
+    var(--bg-elev-1);
+  border-top: 1px solid var(--line-strong);
+  box-shadow: 0 -24px 60px -24px rgba(0, 0, 0, 0.95);
+  transform: translateY(14px);
+  opacity: 0;
+  transition:
+    transform var(--dur-3) var(--ease),
+    opacity var(--dur-3) var(--ease);
+}
+
+.backdrop.is-open .sheet {
+  transform: none;
+  opacity: 1;
+}
+
+/* Der Griff sagt: hier kann man nach unten ziehen. Er tut nichts —
+   Verschieben waere eine Geste, die man erst wieder pruefen muss. */
+.sheet__grip {
+  width: 2.5rem;
+  height: 0.25rem;
+  margin: 0.625rem auto 0.25rem;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.16);
+  flex: none;
+}
+
+.sheet__head {
+  position: relative;
+  flex: none;
+  padding: 0.5rem 2.5rem 0.875rem 0;
+}
+
+.sheet__title {
+  font-size: var(--text-h2);
+  line-height: var(--text-h2--line-height);
+  letter-spacing: var(--text-h2--letter-spacing);
+}
+
+.sheet__sub {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+
+.sheet__close {
+  position: absolute;
+  top: 0.125rem;
+  right: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  color: var(--text-3);
+  transition:
+    color var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease);
+}
+
+.sheet__close:hover {
+  color: var(--text-1);
+  background: var(--bg-elev-3);
+}
+
+.sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 0.125rem;
+  /* Platz fuer den Fokusring am oberen und unteren Rand. */
+  padding-block: 0.125rem 0.5rem;
+}
+
+.sheet__text {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+/* Zusammenfassung am Fuss eines Formulars — die Zahlen, die man gerade
+   einträgt, ohne den Dialog zu verlassen. */
+.sheet__preview {
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--green-200);
+  text-align: center;
+}
+
+.sheet__preview:empty {
+  display: none;
+}
+
+.sheet__foot {
+  flex: none;
+  padding-top: 0.875rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+/* --- Lebensmittel-Logger im Mahlzeiten-Dialog --------------------------- */
+
+.sheet__preview--accent {
+  border: 1px dashed var(--line-green);
+}
+
+.food-list {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 13rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.food-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5625rem 0.6875rem;
+  border-radius: var(--r-md);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.food-row__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-1);
+}
+
+.food-row__meta {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+  margin-top: 0.125rem;
+}
+
+.icon-btn--primary {
+  color: var(--text-on-green);
+  background: linear-gradient(180deg, var(--green-600) 0%, var(--green-700) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 0 0 1px rgba(34, 199, 126, 0.32),
+    var(--shadow-green);
+}
+
+.icon-btn--primary:hover {
+  background: linear-gradient(180deg, var(--green-700) 0%, var(--green-800) 100%);
+}
+
+/* Variante fuer lange Formulare: fast voll Hoehe, damit nicht staendig
+   gescrollt werden muss. */
+.sheet--tall {
+  height: 92dvh;
+}
+
+/* Ab Tablet ist der Dialog kein Sheet mehr, sondern eine Karte in der
+   Mitte — die Breite des Panels macht lange Formulare lesbar. */
+@media (min-width: 40rem) {
+  .backdrop {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .sheet {
+    width: min(100%, 32rem);
+    max-height: min(88dvh, 44rem);
+    padding: 0 1.25rem 1.25rem;
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow-lg), var(--shadow-top);
+  }
+
+  .sheet--tall {
+    height: min(88dvh, 44rem);
+  }
+
+  /* Kein Griff, wenn das Panel in der Mitte steht — dort gibt es nichts
+     zu ziehen. */
+  .sheet__grip {
+    display: none;
+  }
+
+  .sheet__head {
+    padding-top: 1.125rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   TOAST
+   -------------------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--dock-height) + env(safe-area-inset-bottom) + 1rem);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: min(calc(100% - 1.5rem), 26rem);
+  padding: 0.6875rem 0.875rem;
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, var(--glass-1), var(--glass-2));
+  border: 1px solid var(--line-green);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-top),
+    0 20px 44px -20px rgba(0, 0, 0, 0.95),
+    0 0 0 4px rgba(34, 199, 126, 0.06);
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  transition:
+    transform var(--dur-3) var(--ease),
+    opacity var(--dur-3) var(--ease);
+}
+
+.toast.is-open {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.toast__icon {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--bg-base);
+  background: linear-gradient(180deg, var(--green-300), var(--green-500));
+}
+
+.toast__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-1);
+}
+
+.toast__action {
+  flex: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--r-pill);
+  background: var(--green-tint);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+  color: var(--green-200);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
+}
+
+.toast__action:hover {
+  color: var(--bg-base);
+  background: var(--green-300);
+}
+
+/* Ohne Dock (Trainingsablauf, Onboarding) sitzt der Toast tiefer. */
+body:not(.has-dock) .toast {
+  bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
+}
+
+@media (min-width: 40rem) {
+  .toast {
+    bottom: 1.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   YAZIO-ARTIGE ESSENSSUCHE
+   -------------------------------------------------------------------------- */
+
+.chip-row {
+  display: flex;
+  gap: 0.4375rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-picks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4375rem;
+}
+
+.quick-picks__label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-right: 0.125rem;
+}
+
+.food-row {
+  align-items: flex-start;
+}
+
+.food-row--open {
+  background: var(--bg-elev-2);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.food-row__main {
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  background: transparent;
+}
+
+.food-row__actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon-btn.is-active {
+  color: var(--green-200);
+  background: var(--green-tint-2);
+  box-shadow: inset 0 0 0 1px var(--line-green);
+}
+
+.icon--filled {
+  fill: currentColor;
+}
+
+.food-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.food-detail__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4375rem;
+}
+
+.food-detail__amount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.food-detail__amount .stepper {
+  flex: 1;
+  min-width: 0;
+}

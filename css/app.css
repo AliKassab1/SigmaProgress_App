@@ -1,0 +1,23 @@
+/* ==========================================================================
+   SIGMA PROGRESS — CSS
+   Einziger Einstiegspunkt. Die Reihenfolge ist bindend, weil spaetere
+   Schichten frühere ueberschreiben duerfen:
+
+     1. tokens      Farben, Radien, Schatten, Abstände, Schrift
+     2. base        Reset, Typografie, Raster, Bildschirmgeruest
+     3. components  Alles, was auf mehr als einem Bildschirm vorkommt
+     4. forms       Eingaben, Auswahlkacheln, Regler
+     5. overlay     Dialog und Meldung (liegen ueber allem)
+     6. screens     Kompositionen je Bildschirm
+     7. views       Bildschirme der App
+
+   index.html laedt nur diese Datei.
+   ========================================================================== */
+
+@import "./tokens.css";
+@import "./base.css";
+@import "./components.css";
+@import "./forms.css";
+@import "./overlay.css";
+@import "./screens.css";
+@import "./views.css";

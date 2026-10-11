@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Sigma Progress — Dein Training, Dein Fortschritt</title>
+
+    <meta
+      name="description"
+      content="Sigma Progress: Trainingsplan, Gewichtsverlauf, Ernährung und ein Coach im Chat. Läuft offline, speichert lokal."
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#0a0c0b" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="Sigma Progress" />
+
+    <!-- Eigener Startbildschirm statt Browser-Toolbar. `mobile-web-app-capable`
+         ist der aktuelle Name, `apple-…` die veraltete iOS-Variante — beide
+         nötig, sonst meckert der Browser und iOS verliert den Vollbildmodus. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Sigma Progress" />
+    <link rel="apple-touch-icon" href="./icons/icon-180.png" />
+
+    <link rel="icon" href="./icons/favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/app.css" />
+
+    <!-- ================================================================
+         Icon-Sprite.
+
+         Ein Stil für die ganze App: 24×24, 1.75 px Strich, runde Enden,
+         keine Füllungen, currentColor. Die Strichbreite steht im CSS, nicht
+         hier — sonst müsste sie an jeder Stelle mitgepflegt werden.
+
+         Neu gegenüber dem Prototyp: die Symbole, die die fünf Bereiche und
+         das Onboarding tatsächlich brauchen (Minus, Papierkorb, Stift …).
+         ================================================================ -->
+    <svg width="0" height="0" aria-hidden="true" focusable="false" style="position: absolute">
+      <defs>
+        <!-- Navigation -->
+        <symbol id="i-dashboard" viewBox="0 0 24 24">
+          <rect width="7" height="9" x="3" y="3" rx="1.5" />
+          <rect width="7" height="5" x="14" y="3" rx="1.5" />
+          <rect width="7" height="9" x="14" y="12" rx="1.5" />
+          <rect width="7" height="5" x="3" y="16" rx="1.5" />
+        </symbol>
+
+        <symbol id="i-tracken" viewBox="0 0 24 24">
+          <path d="m6.5 6.5 11 11" />
+          <path d="m21 21-1-1" />
+          <path d="m3 3 1 1" />
+          <path d="m18 22 4-4" />
+          <path d="m2 6 4-4" />
+          <path d="m3 10 7-7" />
+          <path d="m14 21 7-7" />
+        </symbol>
+
+        <symbol id="i-chat" viewBox="0 0 24 24">
+          <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+        </symbol>
+
+        <symbol id="i-fortschritt" viewBox="0 0 24 24">
+          <path d="M16 7h6v6" />
+          <path d="m22 7-8.5 8.5-5-5L2 17" />
+        </symbol>
+
+        <symbol id="i-profil" viewBox="0 0 24 24">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </symbol>
+
+        <!-- Messwerte -->
+        <symbol id="i-ruler" viewBox="0 0 24 24">
+          <path d="M21.3 8.7 8.7 21.3a1 1 0 0 1-1.4 0l-4.6-4.6a1 1 0 0 1 0-1.4L15.3 2.7a1 1 0 0 1 1.4 0l4.6 4.6a1 1 0 0 1 0 1.4Z" />
+          <path d="m7.5 10.5 2 2" />
+          <path d="m10.5 7.5 2 2" />
+          <path d="m13.5 4.5 2 2" />
+          <path d="m4.5 13.5 2 2" />
+        </symbol>
+
+        <symbol id="i-flame" viewBox="0 0 24 24">
+          <path
+            d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z"
+          />
+        </symbol>
+
+        <symbol id="i-steps" viewBox="0 0 24 24">
+          <path
+            d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"
+          />
+          <path
+            d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"
+          />
+          <path d="M16 17h4" />
+          <path d="M4 13h4" />
+        </symbol>
+
+        <symbol id="i-clock" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </symbol>
+
+        <symbol id="i-timer" viewBox="0 0 24 24">
+          <path d="M10 2h4" />
+          <path d="M12 14v-4" />
+          <circle cx="12" cy="14" r="8" />
+        </symbol>
+
+        <symbol id="i-gauge" viewBox="0 0 24 24">
+          <path d="m12 14 4-4" />
+          <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+        </symbol>
+
+        <symbol id="i-target" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="6" />
+          <circle cx="12" cy="12" r="2" />
+        </symbol>
+
+        <symbol id="i-pulse" viewBox="0 0 24 24">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </symbol>
+
+        <symbol id="i-activity" viewBox="0 0 24 24">
+          <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+        </symbol>
+
+        <symbol id="i-bar-chart" viewBox="0 0 24 24">
+          <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+          <path d="M7 16v-4" />
+          <path d="M12 16V8" />
+          <path d="M17 16V5" />
+        </symbol>
+
+        <!-- Training -->
+        <symbol id="i-dumbbell" viewBox="0 0 24 24">
+          <path d="m6.5 6.5 11 11" />
+          <path d="m21 21-1-1" />
+          <path d="m3 3 1 1" />
+          <path d="m18 22 4-4" />
+          <path d="m2 6 4-4" />
+          <path d="m3 10 7-7" />
+          <path d="m14 21 7-7" />
+        </symbol>
+
+        <symbol id="i-play" viewBox="0 0 24 24">
+          <path d="M6 4.5v15l13-7.5Z" fill="currentColor" stroke="none" />
+        </symbol>
+
+        <symbol id="i-pause" viewBox="0 0 24 24">
+          <path d="M14 4v16" />
+          <path d="M10 4v16" />
+        </symbol>
+
+        <symbol id="i-refresh" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 16H3v5" />
+        </symbol>
+
+        <symbol id="i-list" viewBox="0 0 24 24">
+          <path d="M8 6h13" />
+          <path d="M8 12h13" />
+          <path d="M8 18h13" />
+          <path d="M3 6h.01" />
+          <path d="M3 12h.01" />
+          <path d="M3 18h.01" />
+        </symbol>
+
+        <symbol id="i-trophy" viewBox="0 0 24 24">
+          <path
+            d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"
+          />
+          <path
+            d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"
+          />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+        </symbol>
+
+        <symbol id="i-award" viewBox="0 0 24 24">
+          <path
+            d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"
+          />
+          <circle cx="12" cy="8" r="6" />
+        </symbol>
+
+        <symbol id="i-sparkle" viewBox="0 0 24 24">
+          <path
+            d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"
+          />
+          <path d="M5 3v4" />
+          <path d="M19 17v4" />
+          <path d="M3 5h4" />
+          <path d="M17 19h4" />
+        </symbol>
+
+        <symbol id="i-zap" viewBox="0 0 24 24">
+          <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+        </symbol>
+
+        <!-- Ernährung -->
+        <symbol id="i-utensils" viewBox="0 0 24 24">
+          <path d="M3 2v7c0 1.1.9 2 2 2h1a2 2 0 0 0 2-2V2" />
+          <path d="M6 2v20" />
+          <path d="M18 2c-1.5 2-2 4-2 6 0 2 .5 3 2 3h1V2Z" />
+          <path d="M19 11v11" />
+        </symbol>
+
+        <symbol id="i-camera" viewBox="0 0 24 24">
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z" />
+          <circle cx="12" cy="13" r="3" />
+        </symbol>
+
+        <symbol id="i-video" viewBox="0 0 24 24">
+          <path d="m16 13 5.2 3.1a.5.5 0 0 0 .8-.4V8.3a.5.5 0 0 0-.8-.4L16 11Z" />
+          <rect width="13" height="14" x="3" y="5" rx="2" />
+        </symbol>
+
+        <!-- Bedienung -->
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5v14" />
+        </symbol>
+
+        <symbol id="i-minus" viewBox="0 0 24 24">
+          <path d="M5 12h14" />
+        </symbol>
+
+        <symbol id="i-close" viewBox="0 0 24 24">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </symbol>
+
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="M20 6 9 17l-5-5" />
+        </symbol>
+
+        <symbol id="i-edit" viewBox="0 0 24 24">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z" />
+        </symbol>
+
+        <symbol id="i-trash" viewBox="0 0 24 24">
+          <path d="M3 6h18" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+        </symbol>
+
+        <symbol id="i-heart" viewBox="0 0 24 24">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" />
+        </symbol>
+
+        <symbol id="i-drop" viewBox="0 0 24 24">
+          <path d="M12 2.5 6.9 8.4a7 7 0 1 0 10.2 0Z" />
+        </symbol>
+
+        <symbol id="i-download" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <path d="m7 10 5 5 5-5" />
+          <path d="M12 15V3" />
+        </symbol>
+
+        <symbol id="i-grid" viewBox="0 0 24 24">
+          <rect width="7" height="7" x="3" y="3" rx="1.5" />
+          <rect width="7" height="7" x="14" y="3" rx="1.5" />
+          <rect width="7" height="7" x="14" y="14" rx="1.5" />
+          <rect width="7" height="7" x="3" y="14" rx="1.5" />
+        </symbol>
+
+        <symbol id="i-chevron-right" viewBox="0 0 24 24">
+          <path d="m9 18 6-6-6-6" />
+        </symbol>
+
+        <symbol id="i-chevron-down" viewBox="0 0 24 24">
+          <path d="m6 9 6 6 6-6" />
+        </symbol>
+
+        <symbol id="i-arrow-right" viewBox="0 0 24 24">
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </symbol>
+
+        <symbol id="i-arrow-left" viewBox="0 0 24 24">
+          <path d="M19 12H5" />
+          <path d="m12 19-7-7 7-7" />
+        </symbol>
+
+        <symbol id="i-arrow-up" viewBox="0 0 24 24">
+          <path d="m5 12 7-7 7 7" />
+          <path d="M12 19V5" />
+        </symbol>
+
+        <symbol id="i-arrow-down" viewBox="0 0 24 24">
+          <path d="M12 5v14" />
+          <path d="m19 12-7 7-7-7" />
+        </symbol>
+
+        <symbol id="i-send" viewBox="0 0 24 24">
+          <path d="M14.5 4.5 21 3l-1.5 6.5L5 19l-2-2Z" />
+          <path d="m10 14 4-4" />
+        </symbol>
+
+        <!-- System -->
+        <symbol id="i-bell" viewBox="0 0 24 24">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </symbol>
+
+        <symbol id="i-calendar" viewBox="0 0 24 24">
+          <path d="M8 2v4" />
+          <path d="M16 2v4" />
+          <rect width="18" height="18" x="3" y="4" rx="2" />
+          <path d="M3 10h18" />
+        </symbol>
+
+        <symbol id="i-info" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </symbol>
+
+        <symbol id="i-help" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+          <path d="M12 17h.01" />
+        </symbol>
+
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect width="18" height="11" x="3" y="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </symbol>
+
+        <symbol id="i-eye" viewBox="0 0 24 24">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+          <circle cx="12" cy="12" r="3" />
+        </symbol>
+
+        <symbol id="i-eye-off" viewBox="0 0 24 24">
+          <path d="M10.7 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a14 14 0 0 1-2.3 3.3" />
+          <path d="M6.6 6.6A14.2 14.2 0 0 0 2 12s3.5 7 10 7a10.6 10.6 0 0 0 5-1.2" />
+          <path d="M14.1 14.1a3 3 0 1 1-4.2-4.2" />
+          <path d="m2 2 20 20" />
+        </symbol>
+
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+        </symbol>
+
+        <symbol id="i-moon" viewBox="0 0 24 24">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </symbol>
+
+        <symbol id="i-sun" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.93 4.93 1.41 1.41" />
+          <path d="m17.66 17.66 1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.34 17.66-1.41 1.41" />
+          <path d="m19.07 4.93-1.41 1.41" />
+        </symbol>
+
+        <symbol id="i-globe" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+          <path d="M2 12h20" />
+        </symbol>
+
+        <symbol id="i-database" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M3 5v14a9 3 0 0 0 18 0V5" />
+          <path d="M3 12a9 3 0 0 0 18 0" />
+        </symbol>
+
+        <symbol id="i-cloud-off" viewBox="0 0 24 24">
+          <path d="m2 2 20 20" />
+          <path d="M5.78 5.78A7 7 0 0 0 5 19h11.5" />
+          <path d="M19.5 19H21a3 3 0 0 0 .6-5.94" />
+          <path d="M18 12.5A5.5 5.5 0 0 0 9.6 6.06" />
+        </symbol>
+
+        <symbol id="i-user" viewBox="0 0 24 24">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </symbol>
+
+        <symbol id="i-settings" viewBox="0 0 24 24">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+          <circle cx="12" cy="12" r="3" />
+        </symbol>
+
+        <symbol id="i-mail" viewBox="0 0 24 24">
+          <rect width="20" height="16" x="2" y="4" rx="2" />
+          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+        </symbol>
+
+        <symbol id="i-credit-card" viewBox="0 0 24 24">
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <path d="M2 10h20" />
+        </symbol>
+
+        <symbol id="i-log-out" viewBox="0 0 24 24">
+          <path d="m16 17 5-5-5-5" />
+          <path d="M21 12H9" />
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        </symbol>
+
+        <symbol id="i-more" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="1" />
+          <circle cx="19" cy="12" r="1" />
+          <circle cx="5" cy="12" r="1" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <!-- ================================================================
+         Das Wurzelelement. main.js baut Topbar, Bildschirm und Dock
+         darin auf — statisches Markup waere hier nur eine zweite
+         Wahrheit, die veralten koennte.
+         ================================================================ -->
+    <div id="app">
+      <!-- Erster Eindruck, bevor das JavaScript laeuft. Kein Ladekreisel:
+           der bleibt haengen, wenn etwas schiefgeht. main.js ersetzt
+           diesen Block durch das eigentliche Geruest. -->
+      <div class="boot">
+        <span class="brand__mark brand__mark--xl">
+          <svg viewBox="87.43 386.78 281.24 204.49" aria-hidden="true">
+            <path d="M133.16 472.55h143.53v35.35h-48.52v82.77h-46.5V507.9h-48.51z" />
+          </svg>
+        </span>
+        <p class="boot__name">Sigma Progress</p>
+      </div>
+    </div>
+
+    <noscript>
+      <div class="noscript">
+        <h1>Sigma Progress braucht JavaScript</h1>
+        <p>
+          Die App zeichnet alle Bildschirme im Browser auf — es gibt keine fertigen Seiten zum
+          Anzeigen. Mit aktiviertem JavaScript laeuft sie sofort, auch offline.
+        </p>
+      </div>
+    </noscript>
+
+  </head>
+
+  <body>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,174 @@
+/* ==========================================================================
+   SIGMA PROGRESS — APP DESIGN SYSTEM / TOKENS
+   Schritt 1: reine Oberflaeche. Keine Logik, keine Daten, keine Berechnungen.
+
+   Dark-Ground-Variante des bestehenden Brand-Systems:
+   Das Logo-gruen (#058E44) traegt als Fuellung keine weisse Schrift
+   (4,4:1). Fuer Buttons mit weisser Text wird deshalb eine Stufe tiefer
+   gegriffen, die 4,8:1 erreicht. Das helle Signalgrun wird ausschliesslich
+   fuer Akzente auf dunklem Grund verwendet (8,9:1) — dort, wo es nicht
+   mit weissem Text kollidiert.
+
+   Alle Kontraste sind gerechnet, nicht geschaetzt. Wer einen Wert aendert,
+   misst neu.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* --- Flaechen: Anthrazit als Grund, darueber abgestufte Grautone ------ */
+  --bg-base: #0a0c0b; /* Seitengrund (Anthrazit, fast Schwarz)        */
+  --bg-elev-1: #121615; /* Karten                                      */
+  --bg-elev-2: #171d1a; /* erhoehte Karten, Eingabefelder, Chips        */
+  --bg-elev-3: #1e2523; /* Hover, aktive Zeilen, Segmente               */
+  --bg-sunken: #0d100f; /* Vertiefungen: Diagramme, Fortschrittsspuren  */
+
+  --line: rgba(255, 255, 255, 0.07); /* Haarlinie Standard               */
+  --line-strong: rgba(255, 255, 255, 0.13); /* Haarlinie betont           */
+  --line-green: rgba(34, 199, 126, 0.26); /* gruen betonte Kante          */
+
+  /* --- Markegruen: Rampe -------------------------------------------------- */
+  --green-900: #06381f;
+  --green-800: #08522c;
+  --green-700: #0a6e38;
+  --green-600: #0a8443; /* Primaerfuellung, weisse Schrift: 4,78:1      */
+  --green-500: #10a657; /* Verlauf / Hover                             */
+  --green-400: #16be6c; /* leuchtender Verlauf, Icons                   */
+  --green-300: #22c77e; /* AKZENT auf dunkel: 8,86:1                   */
+  --green-200: #6ee7ae; /* Ziffern, Beschriftungen                      */
+  --green-tint: rgba(34, 199, 126, 0.12); /* Flaeche mit Gruen-Schimmer */
+  --green-tint-2: rgba(34, 199, 126, 0.05);
+  --green-glow: rgba(34, 199, 126, 0.45); /* Glow-Radius                  */
+
+  /* --- Weiss und Text ----------------------------------------------------- */
+  --white: #ffffff;
+  --text-1: #f2f6f4; /* Ueberschriften, Werte          16,4:1 auf --bg-elev-1 */
+  --text-2: #a8b3ad; /* Sekundaertext, Beschreibungen   7,4:1  */
+  --text-3: #7c8981; /* Metadaten, Labels               4,6:1  */
+  --text-on-green: #ffffff;
+
+  /* --- Signalfarben fuer Zustaende (nicht marken) ------------------------- */
+  --state-warn: #f0b429;
+  --state-warn-tint: rgba(240, 180, 41, 0.13);
+  --state-calm: #4c9df0;
+  --state-calm-tint: rgba(76, 157, 240, 0.13);
+
+  /* --- Typografie ---------------------------------------------------------
+     Drei Schriften, eine Rollenverteilung — dieselbe wie in der Website:
+     Archivo fuer Headlines und Zahlen, Instrument Sans fuer Fliesstext,
+     JetBrains Mono fuer Labels und Daten. Die Rueckfallketten sind
+     vollstaendig, damit die Oberflaeche auch ohne Netzwerk lesbar bleibt.
+     ---------------------------------------------------------------------- */
+  --font-display: "Archivo", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono",
+    Consolas, "Liberation Mono", monospace;
+
+  --text-display: clamp(1.75rem, 1.42rem + 1.5vw, 2.375rem);
+  --text-display--line-height: 1.12;
+  --text-display--letter-spacing: -0.028em;
+
+  --text-h2: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+  --text-h2--line-height: 1.25;
+  --text-h2--letter-spacing: -0.016em;
+
+  --text-h3: 1rem;
+  --text-h3--line-height: 1.3;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.55;
+
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.45;
+
+  --text-label: 0.6875rem; /* 11px, mono, uppercase, weit getrackt */
+  --text-label--letter-spacing: 0.16em;
+
+  /* --- Radien ------------------------------------------------------------- */
+  --r-xs: 10px;
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-2xl: 34px;
+  --r-pill: 999px;
+
+  /* --- Schatten ------------------------------------------------------------
+     Wichtig: kein einziger Schlagchatten. Karten tragen Tiefe ueber
+     Flaechenhelligkeit, eine Haarlinie und ein sehr weicher Bodenschatten. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 26px -14px rgba(0, 0, 0, 0.85);
+  --shadow-lg: 0 28px 60px -26px rgba(0, 0, 0, 0.9);
+  --shadow-top: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --shadow-green: 0 12px 28px -12px var(--green-glow);
+
+  /* --- Glasflaechen --------------------------------------------------------
+     Kopfleiste, Dock, Dialog und Chat-Eingabe sind keine Flaechen aus
+     deckenden Farben, sondern durchsichtige Scheiben ueber dem Grund.
+     Deshalb steht ihre Farbe hier und nicht direkt in der Komponente —
+     sonst muesste der Schalter fuer helles Design jede Komponente
+     doppelt anfassen. */
+  --glass-1: rgba(26, 32, 30, 0.9);
+  --glass-2: rgba(14, 18, 16, 0.94);
+  --glass-top: rgba(255, 255, 255, 0.07);
+  --scrim: rgba(4, 6, 5, 0.72); /* Verdunkelung hinter einem Dialog     */
+
+  /* --- Bewegung ------------------------------------------------------------ */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-1: 140ms;
+  --dur-2: 240ms;
+  --dur-3: 420ms;
+
+  /* --- Layout -------------------------------------------------------------- */
+  --shell-max: 30rem; /* mobile Spaltenbreite: 480px */
+  --shell-max-wide: 68rem; /* Desktop: 1088px                */
+  --dock-height: 74px;
+  --gutter: clamp(1rem, 4.4vw, 1.5rem);
+}
+
+/* ==========================================================================
+   HELLES DESIGN — EXPERIMENTELL
+   --------------------------------------------------------------------------
+   Nur eine Rampe von Werten ueberschrieben, sonst muesste jede Komponente
+   eine zweite Variante bekommen. Das ist der Grund, warum es Tokens gibt.
+
+   Die Marke wird nicht heller, sondern dunkler: auf weissem Grund ist
+   #0a8443 zu blass fuer Text (2,9:1), #0a6e38 haelt 4,6:1. Der Button
+   bleibt deshalb gefuellt und traegt weisse Schrift.
+   ========================================================================== */
+
+.theme-light {
+  color-scheme: light;
+
+  --bg-base: #f1f3f2;
+  --bg-elev-1: #ffffff;
+  --bg-elev-2: #f5f7f6;
+  --bg-elev-3: #e9eceb;
+  --bg-sunken: #ecefee;
+
+  --line: rgba(10, 20, 16, 0.09);
+  --line-strong: rgba(10, 20, 16, 0.16);
+
+  --green-300: #0a6e38;
+  --green-200: #08522c;
+  --green-tint: rgba(10, 132, 67, 0.09);
+  --green-tint-2: rgba(10, 132, 67, 0.05);
+  --green-glow: rgba(10, 132, 67, 0.3);
+
+  --text-1: #0d1411;
+  --text-2: #4a5550;
+  --text-3: #6b7671;
+
+  --shadow-md: 0 10px 26px -16px rgba(10, 20, 16, 0.3);
+  --shadow-lg: 0 28px 60px -30px rgba(10, 20, 16, 0.34);
+  --shadow-top: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --shadow-green: 0 12px 28px -14px rgba(10, 132, 67, 0.5);
+
+  --glass-1: rgba(255, 255, 255, 0.92);
+  --glass-2: rgba(255, 255, 255, 0.96);
+  --glass-top: rgba(255, 255, 255, 0.9);
+  --scrim: rgba(20, 26, 23, 0.42);
+}
