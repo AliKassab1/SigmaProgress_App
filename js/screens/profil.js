@@ -59,7 +59,6 @@ import {
   fmtNum,
   fmtRelativeDay,
   initials,
-  plural,
 } from "../core/format.js";
 import {
   EQUIPMENT_OPTIONS,
@@ -888,64 +887,15 @@ function openCheckinSheet(ctx, checkin) {
                 energie: checkinDraft.energie,
                 schmerz: checkinDraft.schmerz,
               };
-
-              /* Der Coach meldet sich danach von selbst — das ist der Punkt
-                 des Check-ins. */
-              state.chat.push({
-                id: `c-ci-${Date.now()}`,
-                role: "coach",
-                text: checkinReply(state, checkinDraft),
-                at: new Date().toISOString(),
-                read: false,
-              });
             });
             closeEditor();
-            toast("Check-in gesendet — dein Coach antwortet im Chat.", {
-              icon: "check",
-              duration: 3600,
-            });
+            toast("Check-in gespeichert", { icon: "check", duration: 3200 });
           },
         },
         "Senden"
       )
     ),
   });
-}
-
-/** Antwort des Coach, gestuft nach der Wochenlage. */
-function checkinReply(state, answers) {
-  const streak = weekStreak(state);
-  const change = Math.round((latestWeight(state)?.kg - state.profile.startWeight) * 10) / 10;
-
-  if (answers.schmerz >= 7) {
-    return [
-      "Danke fürs ehrliche Antwort — Schmerzen ab 7 nehme ich ernst.",
-      "Passe den Plan an: eine Woche ohne Gewicht, dafür täglich zehn Minuten Mobilität. Und wenn es nicht besser wird, geh zum Arzt. Das ist keine Frage von Durchhaltevermögen.",
-      "Schreib mir nächste Woche, ob es besser geworden ist.",
-    ].join("\n\n");
-  }
-
-  if (answers.mood <= 2) {
-    return [
-      "Das war eine schwere Woche, und du hast sie trotzdem dokumentiert — das ist der schwierigere Teil.",
-      "Mein Vorschlag für die kommende Woche: nur zwei Einheiten statt drei, dafür beide wirklich. Eine halbierte Woche schlägt eine abgebrochene.",
-      `Deine Serie steht aktuell bei ${streak.current} ${plural(streak.current, "Woche", "Wochen")}. Die läuft weiter, ich zähle sie nicht neu.`,
-    ].join("\n\n");
-  }
-
-  return [
-    `Danke für das Check-in. ${answers.schlaf}/10 Schlaf und ${answers.energie}/10 Energie — ${answers.schlaf >= 6 && answers.energie >= 5 ? "das ist eine solide Grundlage, darauf kann man aufbauen." : "da ist noch Luft nach oben."}`,
-    change !== 0
-      ? `Seit dem Start bist du ${change < 0 ? `${Math.abs(change).toString().replace(".", ",")} kg leichter` : `${change.toString().replace(".", ",")} kg schwerer`}. Die Richtung stimmt, die Grösse ist normal.`
-      : "Dein Gewicht ist stabil — für diese Phase ist das genau richtig.",
-    `Nächste Woche: ${state.goals.workoutsPerWeek} Einheiten, ${state.goals.minutesPerWeek} Minuten. Schreib mir, wenn die Zeit knapp wird — dann stelle ich den Plan um.`,
-  ].join("\n\n");
-}
-
-/** Letztes Gewicht, lokal aus den Daten (nicht aus stats, um Zirkel zu vermeiden). */
-function latestWeight(state) {
-  const sorted = [...state.weights].sort((a, b) => (a.date < b.date ? 1 : -1));
-  return sorted[0] || null;
 }
 
 function slider(label, icon, key, min, max, lowText, highText) {

@@ -23,7 +23,7 @@
    geaendert wurde. Das ist die einzige Stolperfalle dieses Ansatzes.
    ========================================================================== */
 
-const CACHE_VERSION = "sigma-v19";
+const CACHE_VERSION = "sigma-v20";
 const CACHE_NAME = `${CACHE_VERSION}`;
 
 /* Was beim Installieren vorgeholt wird. Die App braucht nichts weiter —
@@ -46,6 +46,7 @@ const PRECACHE = [
   "./js/core/auth.js",
   "./js/core/dom.js",
   "./js/core/format.js",
+  "./js/core/messages.js",
   "./js/core/overlay.js",
   "./js/core/repo.js",
   "./js/core/router.js",
@@ -53,7 +54,6 @@ const PRECACHE = [
   "./js/components/charts.js",
   "./js/components/forms.js",
   "./js/components/ui.js",
-  "./js/data/coach.js",
   "./js/data/foods.js",
   "./js/data/photos.js",
   "./js/data/seed.js",

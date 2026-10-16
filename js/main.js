@@ -348,7 +348,7 @@ function renderDock(route, state) {
   dockHost.hidden = !route.isMain;
   if (!route.isMain) return;
 
-  const unread = unreadCount(state);
+  const unread = unreadCount();
 
   replace(
     dockHost,

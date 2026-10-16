@@ -54,7 +54,8 @@ import {
   initials,
   shortName,
 } from "../core/format.js";
-import { currentCoach } from "../core/auth.js";
+import { currentCoach, sessionAccount } from "../core/auth.js";
+import { unreadForCustomer } from "../core/messages.js";
 
 /* Der angefasste Punkt im Diagramm lebt im Modul: er ist reiner
    Bildschirmzustand und gehoert nicht in die gespeicherten Daten. */
@@ -534,7 +535,8 @@ function weeklyMinutesCard(state) {
 function coachCard(ctx, state) {
   const checkin = nextCheckin(state);
   const coach = currentCoach(state.profile);
-  const unread = state.chat.filter((item) => item.role === "coach" && !item.read).length;
+  const account = sessionAccount();
+  const unread = account ? unreadForCustomer(account.email) : 0;
 
   return card(
     { class: "reveal reveal-5 card--glow" },

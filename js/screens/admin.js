@@ -53,7 +53,23 @@ import {
   setAbo,
   updateAccount,
 } from "../core/auth.js";
-import { fmtDate, fmtDateLong, fmtNum, fmtRelativeDay, initials, plural } from "../core/format.js";
+import {
+  conversationsForCoach,
+  markRead,
+  messagesFor,
+  sendMessage,
+} from "../core/messages.js";
+import {
+  addDays,
+  dayKey,
+  fmtDate,
+  fmtDateLong,
+  fmtNum,
+  fmtRelativeDay,
+  fmtTime,
+  initials,
+  plural,
+} from "../core/format.js";
 
 /* --------------------------------------------------------------------------
    Aufbau
@@ -61,6 +77,7 @@ import { fmtDate, fmtDateLong, fmtNum, fmtRelativeDay, initials, plural } from "
 
 const SECTIONS = [
   { id: "uebersicht", label: "Übersicht", icon: "grid", roles: ["admin", "coach"] },
+  { id: "nachrichten", label: "Nachrichten", icon: "chat", roles: ["coach"] },
   { id: "anfragen", label: "Anfragen", icon: "mail", roles: ["admin"] },
   { id: "kunden", label: "Kunden", icon: "user", roles: ["admin", "coach"] },
   { id: "coaches", label: "Coaches", icon: "award", roles: ["admin"] },
@@ -97,12 +114,18 @@ export default function renderAdmin(ctx, route) {
   }
 
   const sections = SECTIONS.filter((item) => item.roles.includes(account.role));
-  const active = sections.find((item) => item.id === route.param) || sections[0];
+
+  /* Die Route ist #/admin/<bereich> — bei Nachrichten zusätzlich
+     #/admin/nachrichten/<kunde>. `route.param` trägt alles nach `/admin/`,
+     deshalb wird hier selbst am Schrägstrich getrennt. */
+  const [sectionParam, ...rest] = String(route.param || "").split("/");
+  const sub = rest.join("/");
+  const active = sections.find((item) => item.id === sectionParam) || sections[0];
 
   /* Eine Adresse, die es fuer diese Rolle nicht gibt (oder die es nie gab),
      weicht auf den gueltigen Abschnitt aus. Sonst stunde in der Browserzeile
      eine Route, die gerade gar nicht angezeigt wird. */
-  if (route.param && route.param !== active.id) {
+  if (sectionParam && sectionParam !== active.id) {
     ctx.navigate(`/admin/${active.id}`);
   }
 
@@ -111,7 +134,7 @@ export default function renderAdmin(ctx, route) {
     { class: "admin" },
     adminBar(account, ctx),
     adminTabs(sections, active),
-    h("div", { class: "admin__body" }, h("div", { class: "stack stack--lg" }, ...section(ctx, account, active)))
+    h("div", { class: "admin__body" }, h("div", { class: "stack stack--lg" }, ...section(ctx, account, active, sub)))
   );
 }
 
@@ -164,8 +187,10 @@ function adminTabs(sections, active) {
   );
 }
 
-function section(ctx, account, active) {
+function section(ctx, account, active, sub = "") {
   switch (active.id) {
+    case "nachrichten":
+      return messagesSection(ctx, account, sub);
     case "anfragen":
       return requestsSection(ctx);
     case "kunden":
@@ -483,6 +508,223 @@ function customerRow(ctx, isAdmin, konto) {
     note: konto.abo && konto.abo.since ? `Abo seit ${fmtDate(konto.abo.since)}` : "",
     actions,
   });
+}
+
+/* --------------------------------------------------------------------------
+   Nachrichten (Coach)
+   -------------------------------------------------------------------------- */
+
+/* Der offene Antwortentwurf liegt am Modul: beim Tippen wird nichts
+   gespeichert, und beim Öffnen eines Gesprächs beginnt er leer. */
+const replyDraft = { text: "" };
+
+function messagesSection(ctx, account, customerEmail) {
+  if (customerEmail) return conversationView(ctx, account, customerEmail);
+
+  const conversations = conversationsForCoach(account.email);
+
+  return [
+    card(
+      {},
+      cardHead(`Nachrichten · ${conversations.length}`),
+      conversations.length
+        ? h(
+            "div",
+            { class: "admin__rows" },
+            ...conversations.map((item) => conversationRow(ctx, item))
+          )
+        : empty({
+            icon: "chat",
+            title: "Keine Nachrichten",
+            hint: "Sobald dir ein Kunde schreibt, erscheint das Gespräch hier.",
+          })
+    ),
+  ];
+}
+
+/** Eine Zeile je Kunde — mit Name, E-Mail und Ungelesen-Marke. */
+function conversationRow(ctx, conversation) {
+  const konto = accountByEmail(conversation.customer);
+  const name = konto ? konto.name : conversation.customer;
+  const tags = [];
+
+  if (conversation.unread > 0) {
+    tags.push(chip(`${conversation.unread} ungelesen`, { variant: "green", dot: true }));
+  }
+
+  return personRow({
+    name,
+    email: conversation.customer,
+    tags,
+    note: `${preview(conversation.last)} · ${fmtRelativeDay(dayOf(conversation.lastAt))}`,
+    actions: [
+      button({
+        label: "Öffnen",
+        size: "sm",
+        icon: "chat",
+        onClick: () => {
+          replyDraft.text = "";
+          ctx.navigate(`/admin/nachrichten/${conversation.customer}`);
+        },
+      }),
+    ],
+  });
+}
+
+/** Der offene Verlauf mit einem Kunden, samt Antwortfeld. */
+function conversationView(ctx, account, customerEmail) {
+  const konto = accountByEmail(customerEmail);
+  const name = konto ? konto.name : customerEmail;
+  const messages = messagesFor(customerEmail);
+
+  /* Beim Öffnen gilt das Gespräch als gelesen. Gibt es etwas zu markieren,
+     folgt ein Durchlauf mehr — dann verschwindet die Ungelesen-Marke. */
+  const changed = markRead(customerEmail, "coach");
+  if (changed > 0) queueMicrotask(() => ctx.refresh());
+
+  return [
+    card(
+      {},
+      h(
+        "div",
+        { class: "row" },
+        button({
+          label: "Zurück",
+          size: "sm",
+          variant: "ghost",
+          icon: "arrow-left",
+          onClick: () => ctx.navigate("/admin/nachrichten"),
+        }),
+        avatar(initials(name), { alt: "" }),
+        h(
+          "div",
+          { style: { flex: "1", minWidth: "0" } },
+          h("p", { class: "card__title" }, name),
+          h("p", { class: "meta-dim" }, customerEmail)
+        )
+      )
+    ),
+    card({}, h("div", { class: "chat__thread" }, adminThread(messages, name)), adminComposer(ctx, account, customerEmail)),
+  ];
+}
+
+function adminThread(messages, name) {
+  if (!messages.length) {
+    return h(
+      "div",
+      { class: "chat__empty" },
+      h("p", { class: "meta-dim" }, "Noch keine Nachrichten in diesem Gespräch.")
+    );
+  }
+
+  const out = [];
+  let lastDay = null;
+
+  for (const message of messages) {
+    const day = String(message.at || "").slice(0, 10);
+    if (day !== lastDay) {
+      lastDay = day;
+      out.push(h("p", { class: "chat__day" }, messageDayLabel(day)));
+    }
+    out.push(adminBubble(message, name));
+  }
+
+  return out;
+}
+
+function messageDayLabel(day) {
+  if (day === dayKey()) return "Heute";
+  if (day === addDays(dayKey(), -1)) return "Gestern";
+  return fmtDate(day);
+}
+
+function adminBubble(message, name) {
+  /* In der Coach-Sicht sind die eigenen Nachrichten die des Coachs. */
+  const mine = message.from === "coach";
+
+  return h(
+    "div",
+    { class: `msg ${mine ? "msg--me" : "msg--coach"}` },
+    !mine &&
+      h(
+        "span",
+        { class: "avatar avatar--cool avatar--sm msg__avatar", "aria-hidden": "true" },
+        initials(name)
+      ),
+    h(
+      "div",
+      { class: "msg__body" },
+      h(
+        "div",
+        { class: "msg__bubble" },
+        String(message.text || "")
+          .split("\n")
+          .filter((line) => line.trim() !== "")
+          .map((line) => h("p", { class: "msg__line" }, line))
+      ),
+      h("p", { class: "msg__time" }, fmtTime(message.at))
+    )
+  );
+}
+
+function adminComposer(ctx, account, customerEmail) {
+  return h(
+    "div",
+    { class: "chat__composer", style: { bottom: "1rem" } },
+    h(
+      "form",
+      {
+        class: "chat__form",
+        onSubmit: (event) => {
+          event.preventDefault();
+          sendAdminReply(ctx, account, customerEmail);
+        },
+      },
+      textInput({
+        value: replyDraft.text,
+        id: "admin-reply",
+        placeholder: "Antwort an den Kunden",
+        maxLength: 500,
+        onInput: (value) => {
+          replyDraft.text = value;
+          updateAdminSendButton();
+        },
+      }),
+      h(
+        "button",
+        {
+          type: "submit",
+          class: "send",
+          id: "admin-send",
+          "aria-label": "Antwort senden",
+          disabled: true,
+        },
+        Icon("send")
+      )
+    )
+  );
+}
+
+function updateAdminSendButton() {
+  const btn = document.getElementById("admin-send");
+  if (btn) btn.disabled = !replyDraft.text.trim();
+}
+
+function sendAdminReply(ctx, account, customerEmail) {
+  const text = replyDraft.text.trim();
+  if (!text) return;
+
+  replyDraft.text = "";
+  sendMessage({ customer: customerEmail, coach: account.email, from: "coach", text });
+  ctx.refresh();
+}
+
+/** Die letzte Nachricht in einer Zeile, kurz gehalten. */
+function preview(text) {
+  const single = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return single.length > 64 ? `${single.slice(0, 63)}…` : single;
 }
 
 /* --------------------------------------------------------------------------

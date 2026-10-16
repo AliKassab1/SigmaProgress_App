@@ -1,61 +1,62 @@
 /* ==========================================================================
    SIGMA PROGRESS — screens/chat.js
    --------------------------------------------------------------------------
-   Der Chat mit dem Coach.
+   Der Chat mit dem Coach — ein echter 1:1-Verlauf.
 
-   Zwei Dinge machen ihn glaubwürdig:
+   Hier wird nichts mehr automatisch beantwortet: Was der Kunde schreibt,
+   landet in core/messages.js und geht an seinen Coach. Der Coach liest und
+   antwortet von Hand in der Verwaltung (#/admin/nachrichten) — es ist
+   derselbe Verlauf, den beide Seiten sehen.
 
-     1. Der Coach kennt deinen Stand. Die Antworten lesen echte Werte aus
-        dem Zustand — Gewicht, Wochenquote, Ziel. Keine Platzhaltertexte.
-     2. Er schreibt von sich aus. Einmal am Tag eine Begruessung, ohne
-        dass du schreiben musst.
-
-   Was er nicht kann: wirklich verstehen. Die Thumenerkennung ist eine
-   Regelliste (data/coach.js), kein Modell. Das ist im Code so vermerkt und
-   im Chat auch nicht anders behauptet.
+   Ohne zugewiesenen Coach gibt es keinen Empfaenger. Dann steht hier ein
+   Hinweis statt einer Eingabezeile, die ins Leere schreibt.
    ========================================================================== */
 
 import { h } from "../core/dom.js";
-import { avatar, Icon } from "../components/ui.js";
+import { avatar, card, Icon } from "../components/ui.js";
 import { textInput } from "../components/forms.js";
-import { quickReplies, markAllRead, proactiveGreeting, reply } from "../data/coach.js";
-import { currentCoach } from "../core/auth.js";
+import { currentCoach, sessionAccount } from "../core/auth.js";
 import { addDays, dayKey, fmtDate, fmtTime, initials } from "../core/format.js";
-import { unreadCount } from "../core/stats.js";
-import { toast } from "../core/overlay.js";
-
-/* -------------------------------------------------------------------------- */
+import { markRead, messagesFor, sendMessage } from "../core/messages.js";
 
 /* Getippter Text. Kein Store-Write beim Tippen — sonst springt der Cursor. */
 const draft = { text: "" };
 
-/* Themenleiste. Jedes Thema bringt eine Frage mit, die ein Mensch auch so
-   stellen wuerde — damit greift die Thumenerkennung in coach.js. */
-const TOPICS = [
-  { id: "training", label: "Training", icon: "dumbbell", ask: "Was steht heute an?" },
-  { id: "ernaehrung", label: "Ernährung", icon: "utensils", ask: "Wie soll ich mich ernähren?" },
-  { id: "uebungen", label: "Übungen", icon: "activity", ask: "Wie übe ich das richtig?" },
-  { id: "planung", label: "Planung", icon: "calendar", ask: "Wie plane ich meine Woche?" },
-  { id: "fortschritt", label: "Fortschritt", icon: "bar-chart", ask: "Wie weit bin ich?" },
-  { id: "motivation", label: "Motivation", icon: "flame", ask: "Ich habe heute keine Lust" },
+/* Vorschlaege fuellen nur das Eingabefeld. Sie senden nie von selbst: die
+   Nachricht geht erst raus, wenn der Kunde sie mit dem Pfeil abschickt. */
+const SUGGESTIONS = [
+  { id: "training", label: "Training", icon: "dumbbell", text: "Kurze Frage zu meinem Training: " },
+  { id: "ernaehrung", label: "Ernährung", icon: "utensils", text: "Frage zu meiner Ernährung: " },
+  { id: "uebungen", label: "Übungen", icon: "activity", text: "Ich habe eine Frage zur Ausführung: " },
+  { id: "planung", label: "Planung", icon: "calendar", text: "Frage zu meiner Wochenplanung: " },
+  { id: "fortschritt", label: "Fortschritt", icon: "bar-chart", text: "Frage zu meinem Fortschritt: " },
+  { id: "motivation", label: "Motivation", icon: "flame", text: "Ich brauche gerade etwas Motivation: " },
 ];
 
-let showTopics = true;
-let prepared = false;
+let showSuggestions = true;
+
+/* -------------------------------------------------------------------------- */
 
 export default function renderChat(ctx) {
   const state = ctx.getState();
+  const account = sessionAccount();
+  const coach = currentCoach(state.profile);
 
-  /* Vorbereitung (gelesen markieren, einmal taeglich begruessen) an den
-     naechsten Tick haengen: wuerde das hier passieren, loest jede
-     Zustandsaenderung sofort ein zweites Zeichnen aus. */
-  if (!prepared) {
-    prepared = true;
-    queueMicrotask(() => {
-      prepare(ctx);
-      scrollToEnd();
-    });
+  if (!account) {
+    return h(
+      "div",
+      { class: "shell chat-screen" },
+      h("div", { class: "screen__inner screen__inner--chat" }, h("p", { class: "lead" }, "Nicht angemeldet."))
+    );
   }
+
+  /* Beim Öffnen gilt der Verlauf als gelesen. Gibt es etwas zu markieren,
+     folgt ein Durchlauf mehr — damit die Marke im Dock sofort verschwindet. */
+  const changed = markRead(account.email, "kunde");
+  if (changed > 0) queueMicrotask(() => ctx.refresh());
+
+  const assigned = Boolean(account.coach);
+  const messages = assigned ? messagesFor(account.email) : [];
 
   return h(
     "div",
@@ -63,109 +64,105 @@ export default function renderChat(ctx) {
     h(
       "div",
       { class: "screen__inner screen__inner--chat" },
-      chatHead(ctx),
-      showTopics && topicBar(ctx),
-      h("div", { class: "chat__thread" }, thread(state.chat, initials(currentCoach(state.profile).name))),
-      composer(ctx, state)
+      chatHead(ctx, coach, assigned),
+      assigned && showSuggestions && suggestionBar(),
+      assigned
+        ? h("div", { class: "chat__thread" }, thread(messages, initials(coach.name)))
+        : noCoach(),
+      assigned ? composer(ctx, account) : null
     )
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Vorbereitung                                                              */
+/* Kopfzeile                                                                 */
 /* -------------------------------------------------------------------------- */
 
-async function prepare(ctx) {
-  const state = ctx.getState();
-
-  const needsRead = unreadCount(state) > 0;
-  const needsGreeting = state.meta.coachGreetedOn !== dayKey();
-  if (!needsRead && !needsGreeting) return;
-
-  const greeting = needsGreeting ? proactiveGreeting(state) : null;
-
-  await ctx.update((draft2) => {
-    markAllRead(draft2);
-    if (greeting) {
-      draft2.chat.push({
-        id: `c-greet-${Date.now()}`,
-        role: "coach",
-        text: greeting,
-        at: new Date().toISOString(),
-        read: true,
-      });
-      draft2.meta.coachGreetedOn = dayKey();
-    }
-  });
-}
-
-/* -------------------------------------------------------------------------- */
-/* Kopf                                                                      */
-/* -------------------------------------------------------------------------- */
-
-function chatHead(ctx) {
-  const state = ctx.getState();
-  const coach = currentCoach(state.profile);
-
+function chatHead(ctx, coach, assigned) {
   return h(
     "header",
-    { class: "screen__head chat__head" },
+    { class: "chat__head" },
     h(
       "div",
       { class: "row" },
-      h("span", { class: "avatar avatar--cool avatar--lg" }, initials(coach.name)),
+      avatar(initials(coach.name), { cool: true, size: "lg" }),
       h(
         "div",
         { style: { flex: "1", minWidth: "0" } },
         h("h1", { class: "h1" }, coach.name),
-        h(
-          "p",
-          { class: "meta-dim" },
-          h("span", { class: "dot-live", "aria-hidden": "true" }),
-          `${coach.title} · antwortet sofort`
-        )
+        h("p", { class: "meta-dim" }, assigned ? coach.title : "Noch keine Zuordnung")
       ),
-      h(
-        "button",
-        {
-          type: "button",
-          class: "icon-btn icon-btn--ghost",
-          "aria-label": showTopics ? "Themenleiste ausblenden" : "Themenleiste einblenden",
-          onClick: () => {
-            showTopics = !showTopics;
-            ctx.refresh();
+      assigned &&
+        h(
+          "button",
+          {
+            type: "button",
+            class: "icon-btn icon-btn--ghost",
+            "aria-label": showSuggestions ? "Vorschläge ausblenden" : "Vorschläge einblenden",
+            onClick: () => {
+              showSuggestions = !showSuggestions;
+              ctx.refresh();
+            },
           },
-        },
-        Icon(showTopics ? "close" : "grid")
-      )
+          Icon(showSuggestions ? "close" : "grid")
+        )
     )
   );
 }
 
-function topicBar(ctx) {
-  return h(
-    "div",
-    { class: "chat__topics", role: "group", "aria-label": "Themen" },
-    TOPICS.map((topic) =>
+/** Verständlicher Hinweis, wenn kein Coach zugewiesen ist. */
+function noCoach() {
+  return card(
+    { variant: "sunken" },
+    h(
+      "div",
+      { class: "notice" },
+      Icon("info", "icon icon--sm"),
       h(
-        "button",
-        {
-          type: "button",
-          class: "topic",
-          onClick: () => {
-            draft.text = topic.ask;
-            send(ctx);
-          },
-        },
-        h("span", { class: "topic__icon" }, Icon(topic.icon)),
-        topic.label
+        "div",
+        null,
+        h("p", { class: "privacy-item__title" }, "Dir ist noch kein Coach zugewiesen"),
+        h(
+          "p",
+          { class: "meta-dim" },
+          "Sobald dein Zugang freigeschaltet und ein Coach eingetragen ist, kannst du hier direkt schreiben."
+        )
       )
     )
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Verlauf                                                                   */
+/* Vorschläge — füllen nur das Eingabefeld                                    */
+/* -------------------------------------------------------------------------- */
+
+function suggestionBar() {
+  return h(
+    "div",
+    { class: "chat__topics", role: "group", "aria-label": "Vorschläge" },
+    SUGGESTIONS.map((item) =>
+      h(
+        "button",
+        { type: "button", class: "topic", onClick: () => fillDraft(item.text) },
+        h("span", { class: "topic__icon" }, Icon(item.icon)),
+        item.label
+      )
+    )
+  );
+}
+
+function fillDraft(value) {
+  draft.text = value;
+  const input = document.getElementById("chat-input");
+  if (input) {
+    input.value = value;
+    input.focus();
+  }
+  updateSendButton();
+}
+
+/* -------------------------------------------------------------------------- */
+/* Verlauf                                                                    */
 /* -------------------------------------------------------------------------- */
 
 function thread(messages, badge) {
@@ -173,11 +170,7 @@ function thread(messages, badge) {
     return h(
       "div",
       { class: "chat__empty" },
-      h(
-        "p",
-        { class: "meta-dim" },
-        "Noch keine Nachrichten. Frag nach deinem Training, deiner Ernährung oder dem nächsten Schritt."
-      )
+      h("p", { class: "meta-dim" }, "Noch keine Nachrichten. Schreib deinem Coach, was du wissen willst.")
     );
   }
 
@@ -203,7 +196,8 @@ function dayLabel(day) {
 }
 
 function bubble(message, badge) {
-  const mine = message.role === "me";
+  /* In der Kundensicht sind die eigenen Nachrichten die des Kunden. */
+  const mine = message.from === "kunde";
 
   return h(
     "div",
@@ -231,50 +225,27 @@ function bubble(message, badge) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Eingabe                                                                   */
+/* Eingabe                                                                    */
 /* -------------------------------------------------------------------------- */
 
-function composer(ctx, state) {
-  const suggestions = quickReplies(state);
-
+function composer(ctx, account) {
   return h(
     "div",
     { class: "chat__composer" },
-    suggestions.length > 0 &&
-      h(
-        "div",
-        { class: "quick-replies", role: "group", "aria-label": "Schnellantworten" },
-        suggestions.map((item) =>
-          h(
-            "button",
-            {
-              type: "button",
-              class: "quick-reply",
-              onClick: () => {
-                draft.text = item;
-                send(ctx);
-              },
-            },
-            item
-          )
-        )
-      ),
-
     h(
       "form",
       {
         class: "chat__form",
         onSubmit: (event) => {
           event.preventDefault();
-          send(ctx);
+          send(ctx, account);
         },
       },
-      h("label", { class: "sr-only", for: "chat-input" }, "Nachricht an den Coach"),
       textInput({
         value: draft.text,
         id: "chat-input",
-        placeholder: "Was möchtest du wissen?",
-        maxLength: 400,
+        placeholder: "Nachricht an deinen Coach",
+        maxLength: 500,
         onInput: (value) => {
           draft.text = value;
           updateSendButton();
@@ -307,56 +278,16 @@ function scrollToEnd() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Senden                                                                    */
+/* Senden                                                                     */
 /* -------------------------------------------------------------------------- */
 
-async function send(ctx) {
+function send(ctx, account) {
   const text = draft.text.trim();
   if (!text) return;
 
   draft.text = "";
+  sendMessage({ customer: account.email, coach: account.coach, from: "kunde", text });
 
-  await ctx.update((state) => {
-    state.chat.push({
-      id: `c-${Date.now()}`,
-      role: "me",
-      text,
-      at: new Date().toISOString(),
-    });
-  });
-
-  updateSendButton();
+  ctx.refresh();
   scrollToEnd();
-
-  /* Kurze Verzoegerung, damit die eigene Nachricht sichtbar ist, bevor die
-     Antwort kommt. Ohne das wirkt es, als wuerde gar nicht geantwortet. */
-  setTimeout(async () => {
-    /* `reply` ist die einzige Stelle, die spaeter ein echtes Modell oder
-       eine API bedient. Was dort schiefgeht, darf nicht als stummer
-       Chat enden — lieber eine ehrliche Antwort als gar keine. */
-    let answers;
-
-    try {
-      answers = reply(text, ctx.getState());
-    } catch (error) {
-      console.error("Coach-Antwort fehlgeschlagen:", error);
-      toast("Die Antwort liess sich gerade nicht erzeugen. Versuch es nochmals.");
-      answers = [
-        "Kurzfassung: Das hat mich diesmal überfordert — ich kann dir zu der Frage gerade nichts Zuverlässiges sagen.",
-        "Frag mich nochmals, oder schau in Fortschritt nach deinen Zahlen.",
-      ];
-    }
-
-    await ctx.update((state) => {
-      state.chat.push({
-        id: `c-${Date.now()}-a`,
-        role: "coach",
-        text: answers.join("\n\n"),
-        at: new Date().toISOString(),
-        read: true,
-      });
-    });
-
-    scrollToEnd();
-  }, 450);
 }

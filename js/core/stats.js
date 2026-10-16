@@ -18,6 +18,8 @@ import {
   parseDay,
   weekStart,
 } from "./format.js";
+import { sessionAccount } from "./auth.js";
+import { unreadForCustomer } from "./messages.js";
 
 /* --------------------------------------------------------------------------
    Trainingstagebuch — die Arten, die ein Eintrag haben kann
@@ -313,8 +315,14 @@ export function lastCheckin(state) {
 }
 
 /** Ungelesene Coach-Nachrichten — der Badge am Chat-Punkt. */
-export function unreadCount(state) {
-  return state.chat.filter((item) => item.role === "coach" && !item.read).length;
+/**
+ * Ungelesene Nachrichten deines Coach (Kundensicht) — die Marke am
+ * Chat-Punkt. Sie kommt aus dem gemeinsamen Nachrichtenspeicher und nicht
+ * mehr aus den Trainingsdaten: der Verlauf gehoert Kunde und Coach.
+ */
+export function unreadCount() {
+  const account = sessionAccount();
+  return account ? unreadForCustomer(account.email) : 0;
 }
 
 export function recentPrs(state, limit = 5) {
